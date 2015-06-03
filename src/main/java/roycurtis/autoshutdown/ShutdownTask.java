@@ -1,17 +1,17 @@
-package roycurtis.autorestart;
+package roycurtis.autoshutdown;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.TimerTask;
 
-public class RestartTask extends TimerTask
+public class ShutdownTask extends TimerTask
 {
     @Override
     public void run()
     {
-        ForgeAutoRestart instance = ForgeAutoRestart.INSTANCE;
-        MinecraftServer  server   = MinecraftServer.getServer();
+        ForgeAutoShutdown instance = ForgeAutoShutdown.INSTANCE;
+        MinecraftServer   server   = MinecraftServer.getServer();
 
         for (Object value : server.getConfigurationManager().playerEntityList)
         {

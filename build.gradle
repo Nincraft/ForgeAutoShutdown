@@ -18,7 +18,7 @@ buildscript {
 apply plugin: 'forge'
 
 version = "1.0"
-group   = "roycurtis.autorestart"
+group   = "roycurtis.autoshutdown"
 
 minecraft
 {

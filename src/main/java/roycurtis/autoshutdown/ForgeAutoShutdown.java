@@ -1,4 +1,4 @@
-package roycurtis.autorestart;
+package roycurtis.autoshutdown;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -17,21 +17,21 @@ import java.util.Date;
 import java.util.Timer;
 
 @Mod(
-    modid   = ForgeAutoRestart.MODID,
-    name    = ForgeAutoRestart.MODID,
-    version = ForgeAutoRestart.VERSION,
+    modid   = ForgeAutoShutdown.MODID,
+    name    = ForgeAutoShutdown.MODID,
+    version = ForgeAutoShutdown.VERSION,
 
     acceptableRemoteVersions = "*",
     acceptableSaveVersions   = ""
 )
-public class ForgeAutoRestart
+public class ForgeAutoShutdown
 {
-    static final String  MODID   = "ForgeAutoRestart";
+    static final String  MODID   = "ForgeAutoShutdown";
     static final String  VERSION = "1.0.0";
     static final Logger  LOGGER  = LogManager.getFormatterLogger(MODID);
 
     @Mod.Instance(MODID)
-    static ForgeAutoRestart INSTANCE;
+    static ForgeAutoShutdown INSTANCE;
 
     Configuration config;
     Timer         timer;
@@ -66,20 +66,20 @@ public class ForgeAutoRestart
     @SideOnly(Side.SERVER)
     public void init(FMLInitializationEvent event)
     {
-        DateFormat  dateFormat = new SimpleDateFormat("HH:mm:ss dd-MMMM-yyyy");
-        RestartTask task       = new RestartTask();
-        Calendar    restartAt  = Calendar.getInstance();
-        restartAt.set(Calendar.HOUR_OF_DAY, cfgHour);
-        restartAt.set(Calendar.MINUTE, cfgMinute);
+        DateFormat   dateFormat = new SimpleDateFormat("HH:mm:ss dd-MMMM-yyyy");
+        ShutdownTask task       = new ShutdownTask();
+        Calendar     shutdownAt = Calendar.getInstance();
+        shutdownAt.set(Calendar.HOUR_OF_DAY, cfgHour);
+        shutdownAt.set(Calendar.MINUTE, cfgMinute);
 
-        // Adjust for when current time surpasses restart schedule
-        // (e.g. if restart time is 07:00 and current time is 13:21)
-        if ( restartAt.before( Calendar.getInstance() ) )
-            restartAt.roll(Calendar.DATE, true);
+        // Adjust for when current time surpasses shutdown schedule
+        // (e.g. if shutdown time is 07:00 and current time is 13:21)
+        if ( shutdownAt.before( Calendar.getInstance() ) )
+            shutdownAt.roll(Calendar.DATE, true);
 
-        Date restartAtDate = restartAt.getTime();
+        Date restartAtDate = shutdownAt.getTime();
 
         timer.schedule(task, restartAtDate);
-        LOGGER.info( "Next automatic restart: %s", dateFormat.format(restartAtDate) );
+        LOGGER.info( "Next automatic shutdown: %s", dateFormat.format(restartAtDate) );
     }
 }
