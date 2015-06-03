@@ -26,9 +26,9 @@ import java.util.Timer;
 )
 public class ForgeAutoShutdown
 {
-    static final String  MODID   = "ForgeAutoShutdown";
-    static final String  VERSION = "1.0.0";
-    static final Logger  LOGGER  = LogManager.getFormatterLogger(MODID);
+    static final String MODID   = "ForgeAutoShutdown";
+    static final String VERSION = "1.0.0";
+    static final Logger LOGGER  = LogManager.getFormatterLogger(MODID);
 
     @Mod.Instance(MODID)
     static ForgeAutoShutdown INSTANCE;
@@ -36,9 +36,10 @@ public class ForgeAutoShutdown
     Configuration config;
     Timer         timer;
 
-    int    cfgHour    = 6;
-    int    cfgMinute  = 0;
-    String cfgMessage = "Scheduled server shutdown";
+    int    cfgHour   = 6;
+    int    cfgMinute = 0;
+    String msgWarn   = "Server is shutting down in %m minute(s).";
+    String msgKick   = "Scheduled server shutdown";
 
     @EventHandler
     @SideOnly(Side.CLIENT)
@@ -50,20 +51,30 @@ public class ForgeAutoShutdown
 
     @EventHandler
     @SideOnly(Side.SERVER)
+    /**
+     * Sets up timer thread and the configuration file. Automatically creates the config
+     * file and populates it with defaults, if missing.
+     */
     public void serverPreInit(FMLPreInitializationEvent event)
     {
         config = new Configuration( event.getSuggestedConfigurationFile() );
-        timer  = new Timer("Forge AutoRestart timer");
+        timer  = new Timer("Forge Auto-Shutdown timer");
 
-        cfgHour    = config.getInt("Hour", "Schedule", cfgHour, 0, 23, "");
-        cfgMinute  = config.getInt("Minute", "Schedule", cfgMinute, 0, 59, "");
-        cfgMessage = config.getString("Message", "Shutdown", cfgMessage, "");
+        cfgHour   = config.getInt("Hour", "Schedule", cfgHour, 0, 23, "");
+        cfgMinute = config.getInt("Minute", "Schedule", cfgMinute, 0, 59, "");
+        msgWarn   = config.getString("Warn", "Messages", msgWarn, "");
+        msgKick   = config.getString("Kick", "Messages", msgKick, "");
 
         config.save();
     }
 
     @EventHandler
     @SideOnly(Side.SERVER)
+    /**
+     * Creates a scheduled task on the mod's timer for the next expected automatic
+     * shutdown time, then every 60 seconds after. This allows the ShutdownTask to warn
+     * all players of an impending shutdown.
+     */
     public void init(FMLInitializationEvent event)
     {
         DateFormat   dateFormat = new SimpleDateFormat("HH:mm:ss dd-MMMM-yyyy");
@@ -71,15 +82,16 @@ public class ForgeAutoShutdown
         Calendar     shutdownAt = Calendar.getInstance();
         shutdownAt.set(Calendar.HOUR_OF_DAY, cfgHour);
         shutdownAt.set(Calendar.MINUTE, cfgMinute);
+        shutdownAt.set(Calendar.SECOND, 0);
 
         // Adjust for when current time surpasses shutdown schedule
         // (e.g. if shutdown time is 07:00 and current time is 13:21)
         if ( shutdownAt.before( Calendar.getInstance() ) )
-            shutdownAt.roll(Calendar.DATE, true);
+            shutdownAt.add(Calendar.DAY_OF_MONTH, 1);
 
-        Date restartAtDate = shutdownAt.getTime();
+        Date shutdownAtDate = shutdownAt.getTime();
 
-        timer.schedule(task, restartAtDate);
-        LOGGER.info( "Next automatic shutdown: %s", dateFormat.format(restartAtDate) );
+        timer.schedule(task, shutdownAtDate, 60 * 1000);
+        LOGGER.info( "Next automatic shutdown: %s", dateFormat.format(shutdownAtDate) );
     }
 }
