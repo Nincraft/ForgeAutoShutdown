@@ -12,9 +12,10 @@ public class ShutdownTask extends TimerTask
     final ForgeAutoShutdown INSTANCE;
     final MinecraftServer   SERVER;
 
-    Byte warningsLeft = 5;
+    Byte    warningsLeft = 5;
+    boolean hasStarted   = true;
 
-    public ShutdownTask()
+    ShutdownTask()
     {
         INSTANCE = ForgeAutoShutdown.INSTANCE;
         SERVER   = MinecraftServer.getServer();
@@ -23,6 +24,8 @@ public class ShutdownTask extends TimerTask
     @Override
     public void run()
     {
+        hasStarted = true;
+
         if (warningsLeft == 0)
             performShutdown();
         else

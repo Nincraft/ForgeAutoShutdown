@@ -2,8 +2,8 @@ package roycurtis.autoshutdown;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraftforge.common.config.Configuration;
@@ -36,16 +36,21 @@ public class ForgeAutoShutdown
     Configuration config;
     Timer         timer;
 
-    int    cfgHour   = 6;
-    int    cfgMinute = 0;
-    String msgWarn   = "Server is shutting down in %m minute(s).";
-    String msgKick   = "Scheduled server shutdown";
+    boolean cfgVoteEnabled  = true;
+    int     cfgHour         = 6;
+    int     cfgMinute       = 0;
+    int     cfgVoteInterval = 15;
+    Integer cfgMinVoters    = 2;
+    int     cfgMaxNoVotes   = 1;
+
+    String msgWarn = "Server is shutting down in %m minute(s).";
+    String msgKick = "Scheduled server shutdown";
 
     @EventHandler
     @SideOnly(Side.CLIENT)
     public void clientPreInit(FMLPreInitializationEvent event)
     {
-        LOGGER.error("This mod is useful only on servers; it will do nothing on this client.");
+        LOGGER.error("This mod is intended only for use on servers.");
         LOGGER.error("Please consider removing this mod from your installation.");
     }
 
@@ -62,8 +67,14 @@ public class ForgeAutoShutdown
 
         cfgHour   = config.getInt("Hour", "Schedule", cfgHour, 0, 23, "");
         cfgMinute = config.getInt("Minute", "Schedule", cfgMinute, 0, 59, "");
-        msgWarn   = config.getString("Warn", "Messages", msgWarn, "");
-        msgKick   = config.getString("Kick", "Messages", msgKick, "");
+
+        cfgVoteEnabled  = config.getBoolean("VoteEnabled", "Voting", cfgVoteEnabled, "");
+        cfgVoteInterval = config.getInt("VoteInterval", "Voting", cfgVoteInterval, 0, 99, "");
+        cfgMinVoters    = config.getInt("MinVoters", "Voting", cfgMinVoters, 0, 99, "");
+        cfgMaxNoVotes   = config.getInt("MaxNoVotes", "Voting", cfgMaxNoVotes, 1, 99, "");
+
+        msgWarn = config.getString("Warn", "Messages", msgWarn, "");
+        msgKick = config.getString("Kick", "Messages", msgKick, "");
 
         config.save();
     }
@@ -75,11 +86,12 @@ public class ForgeAutoShutdown
      * shutdown time, then every 60 seconds after. This allows the ShutdownTask to warn
      * all players of an impending shutdown.
      */
-    public void init(FMLInitializationEvent event)
+    public void serverStart(FMLServerStartingEvent event)
     {
-        DateFormat   dateFormat = new SimpleDateFormat("HH:mm:ss dd-MMMM-yyyy");
-        ShutdownTask task       = new ShutdownTask();
-        Calendar     shutdownAt = Calendar.getInstance();
+        DateFormat      dateFormat = new SimpleDateFormat("HH:mm:ss dd-MMMM-yyyy");
+        ShutdownTask    task       = new ShutdownTask();
+        ShutdownCommand command    = new ShutdownCommand();
+        Calendar        shutdownAt = Calendar.getInstance();
         shutdownAt.set(Calendar.HOUR_OF_DAY, cfgHour);
         shutdownAt.set(Calendar.MINUTE, cfgMinute);
         shutdownAt.set(Calendar.SECOND, 0);
@@ -92,6 +104,7 @@ public class ForgeAutoShutdown
         Date shutdownAtDate = shutdownAt.getTime();
 
         timer.schedule(task, shutdownAtDate, 60 * 1000);
+        event.registerServerCommand(command);
         LOGGER.info( "Next automatic shutdown: %s", dateFormat.format(shutdownAtDate) );
     }
 }
