@@ -35,9 +35,10 @@ public class ShutdownCommand implements ICommand
     @Override
     public String getCommandUsage(ICommandSender p_71518_1_)
     {
-        return "/shutdown - Initiates vote for server shutdown/restart" + "\n" +
-               "/shutdown yes - Casts yes vote for shutdown/restart"  + "\n" +
-               "/shutdown no  - Casts no vote for shutdown/restart";
+        return "/shutdown <yes|no>";
+//        return "§l/shutdown§r - Initiates vote for server shutdown" + " \f" +
+//               "§l/shutdown yes§r - Casts yes vote for shutdown"  + " \f" +
+//               "§l/shutdown no§r  - Casts no vote for shutdown";
     }
 
     @Override
