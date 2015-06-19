@@ -3,7 +3,6 @@ package roycurtis.autoshutdown;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.IChatComponent;
 
 import java.util.TimerTask;
 
@@ -36,10 +35,8 @@ public class ShutdownTask extends TimerTask
     {
         String warning = INSTANCE.msgWarn.replace( "%m", warningsLeft.toString() );
 
-        IChatComponent warningChat = new ChatComponentText("*** " + warning);
-
-        for (Object player : SERVER.getConfigurationManager().playerEntityList)
-            ( (EntityPlayerMP) player ).addChatMessage(warningChat);
+        SERVER.getConfigurationManager()
+            .sendChatMsg( new ChatComponentText("*** " + warning) );
 
         ForgeAutoShutdown.LOGGER.info(warning);
         warningsLeft--;

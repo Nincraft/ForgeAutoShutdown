@@ -1,14 +1,13 @@
 package roycurtis.autoshutdown;
 
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.time.Instant;
+import java.util.*;
 
 public class ShutdownCommand implements ICommand
 {
@@ -18,7 +17,10 @@ public class ShutdownCommand implements ICommand
     final ForgeAutoShutdown INSTANCE;
     final MinecraftServer   SERVER;
 
-    Date lastVote = new Date();
+    HashMap<String, Boolean> votes = new HashMap<>();
+
+    Date    lastVote = Date.from(Instant.EPOCH);
+    boolean voting   = false;
 
     ShutdownCommand()
     {
@@ -36,9 +38,6 @@ public class ShutdownCommand implements ICommand
     public String getCommandUsage(ICommandSender p_71518_1_)
     {
         return "/shutdown <yes|no>";
-//        return "§l/shutdown§r - Initiates vote for server shutdown" + " \f" +
-//               "§l/shutdown yes§r - Casts yes vote for shutdown"  + " \f" +
-//               "§l/shutdown no§r  - Casts no vote for shutdown";
     }
 
     @Override
@@ -50,30 +49,45 @@ public class ShutdownCommand implements ICommand
     @Override
     public void processCommand(ICommandSender sender, String[] args)
     {
+        if (voting)
+            processVote(sender, args);
+        else
+            initiateVote(sender, args);
+    }
+
+    private void initiateVote(ICommandSender sender, String[] args)
+    {
+        if (args.length >= 1)
+            throw new WrongUsageException("FAS.error.novoteinprogress");
+
         Date now        = new Date();
         long interval   = INSTANCE.cfgVoteInterval * 60 * 1000;
         long difference = now.getTime() - lastVote.getTime();
 
         if (difference < interval)
-        {
-            Long   timeLeft = (difference - interval) / 1000;
-            String message  = "*** It is too soon since the last vote to initiate" +
-                "another one. Try again in %d seconds."
-                .replace( "%d", timeLeft.toString() );
-
-            sender.addChatMessage( new ChatComponentText(message) );
-            return;
-        }
+            throw new CommandException("FAS.error.toosoon", (interval - difference) / 1000);
 
         List players = SERVER.getConfigurationManager().playerEntityList;
 
         if (players.size() < INSTANCE.cfgMinVoters)
-        {
-            String message  = "*** Need at least %d players to initiate a vote."
-                .replace( "%d", INSTANCE.cfgMinVoters.toString() );
+            throw new CommandException("FAS.error.notenoughplayers", INSTANCE.cfgMinVoters);
 
-            return;
-        }
+        lastVote = new Date();
+        voting   = true;
+    }
+
+    private void processVote(ICommandSender sender, String[] args)
+    {
+        if (args.length < 1)
+            throw new CommandException("FAS.error.voteinprogress");
+        else if ( !OPTIONS.contains( args[0].toLowerCase() ) )
+            throw new WrongUsageException("FAS.error.incorrectsyntax");
+    }
+
+    private void voteSuccess()
+    {
+        ForgeAutoShutdown.LOGGER.info("Server shutdown initiated by vote");
+        INSTANCE.task.performShutdown();
     }
 
     @Override

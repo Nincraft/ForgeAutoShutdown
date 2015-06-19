@@ -26,7 +26,7 @@ import java.util.Timer;
 )
 public class ForgeAutoShutdown
 {
-    static final String MODID   = "ForgeAutoShutdown";
+    static final String MODID   = "forgeautoshutdown";
     static final String VERSION = "1.0.0";
     static final Logger LOGGER  = LogManager.getFormatterLogger(MODID);
 
@@ -34,6 +34,7 @@ public class ForgeAutoShutdown
     static ForgeAutoShutdown INSTANCE;
 
     Configuration config;
+    ShutdownTask  task;
     Timer         timer;
 
     boolean cfgVoteEnabled  = true;
@@ -89,12 +90,13 @@ public class ForgeAutoShutdown
     public void serverStart(FMLServerStartingEvent event)
     {
         DateFormat      dateFormat = new SimpleDateFormat("HH:mm:ss dd-MMMM-yyyy");
-        ShutdownTask    task       = new ShutdownTask();
         ShutdownCommand command    = new ShutdownCommand();
         Calendar        shutdownAt = Calendar.getInstance();
         shutdownAt.set(Calendar.HOUR_OF_DAY, cfgHour);
         shutdownAt.set(Calendar.MINUTE, cfgMinute);
         shutdownAt.set(Calendar.SECOND, 0);
+
+        task = new ShutdownTask();
 
         // Adjust for when current time surpasses shutdown schedule
         // (e.g. if shutdown time is 07:00 and current time is 13:21)
