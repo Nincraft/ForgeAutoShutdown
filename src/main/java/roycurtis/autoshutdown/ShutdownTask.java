@@ -1,5 +1,7 @@
 package roycurtis.autoshutdown;
 
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
@@ -12,7 +14,8 @@ public class ShutdownTask extends TimerTask
     final ForgeAutoShutdown INSTANCE;
     final MinecraftServer   SERVER;
 
-    Byte warningsLeft = 5;
+    boolean executeTick  = false;
+    Byte    warningsLeft = 5;
 
     public ShutdownTask()
     {
@@ -23,10 +26,20 @@ public class ShutdownTask extends TimerTask
     @Override
     public void run()
     {
+        executeTick = true;
+    }
+
+    @SubscribeEvent
+    public void onServerTick(TickEvent.ServerTickEvent event)
+    {
+        if (!executeTick) return;
+
         if (warningsLeft == 0)
             performShutdown();
         else
             performWarning();
+
+        executeTick = false;
     }
 
     void performWarning()

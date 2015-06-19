@@ -1,5 +1,6 @@
 package roycurtis.autoshutdown;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -27,7 +28,7 @@ import java.util.Timer;
 public class ForgeAutoShutdown
 {
     static final String MODID   = "ForgeAutoShutdown";
-    static final String VERSION = "1.0.0";
+    static final String VERSION = "1.0.1";
     static final Logger LOGGER  = LogManager.getFormatterLogger(MODID);
 
     @Mod.Instance(MODID)
@@ -71,9 +72,14 @@ public class ForgeAutoShutdown
     @EventHandler
     @SideOnly(Side.SERVER)
     /**
-     * Creates a scheduled task on the mod's timer for the next expected automatic
-     * shutdown time, then every 60 seconds after. This allows the ShutdownTask to warn
-     * all players of an impending shutdown.
+     * This does two main things:
+     * * Register the ShutdownTask as a server tick handler
+     * * Schedules ShutdownTask to run at the scheduled time, then every minute after
+     *
+     * The use of a tick handler ensures the shutdown process is run in the main thread,
+     * to prevent issues with cross-thread contamination. As server ticks run 20 times a
+     * second, the event is just a boolean check. This means the scheduled task's role is
+     * to unlock the tick handler.
      */
     public void init(FMLInitializationEvent event)
     {
@@ -91,6 +97,7 @@ public class ForgeAutoShutdown
 
         Date shutdownAtDate = shutdownAt.getTime();
 
+        FMLCommonHandler.instance().bus().register(task);
         timer.schedule(task, shutdownAtDate, 60 * 1000);
         LOGGER.info( "Next automatic shutdown: %s", dateFormat.format(shutdownAtDate) );
     }
