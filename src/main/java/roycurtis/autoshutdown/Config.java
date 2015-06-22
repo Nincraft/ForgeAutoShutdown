@@ -9,6 +9,10 @@ import java.io.File;
  */
 class Config
 {
+    private static final String SCHEDULE = "Schedule";
+    private static final String VOTING   = "Voting";
+    private static final String MESSAGES = "Messages";
+
     static Configuration config;
 
     static int hour   = 6;
@@ -31,16 +35,25 @@ class Config
     {
         config = new Configuration(configFile);
 
-        hour   = config.getInt("Hour", "Schedule", hour, 0, 23, "");
-        minute = config.getInt("Minute", "Schedule", minute, 0, 59, "");
+        config.setCategoryComment("Schedule",
+            "All times are 24 hour (military) format, relative to machine's local time");
 
-        voteEnabled  = config.getBoolean("VoteEnabled", "Voting", voteEnabled, "");
-        voteInterval = config.getInt("VoteInterval", "Voting", voteInterval, 0, 99, "");
-        minVoters    = config.getInt("MinVoters", "Voting", minVoters, 0, 99, "");
-        maxNoVotes   = config.getInt("MaxNoVotes", "Voting", maxNoVotes, 1, 99, "");
+        hour   = config.getInt("Hour", SCHEDULE, hour, 0, 23,
+            "Hour of the shutdown process (e.g. 8 for 8 AM)");
+        minute = config.getInt("Minute", SCHEDULE, minute, 0, 59,
+            "Minute of the shutdown process (e.g. 30 for half-past)");
 
-        msgWarn = config.getString("Warn", "Messages", msgWarn, "");
-        msgKick = config.getString("Kick", "Messages", msgKick, "");
+        voteEnabled  = config.getBoolean("VoteEnabled", VOTING, voteEnabled,
+            "If true, players may vote to shut server down using '/shutdown'");
+        voteInterval = config.getInt("VoteInterval", VOTING, voteInterval, 0, 999,
+            "Min. minutes after a failed vote before new one can begin");
+        minVoters    = config.getInt("MinVoters", VOTING, minVoters, 0, 999,
+            "Min. players online required to begin a vote");
+        maxNoVotes   = config.getInt("MaxNoVotes", VOTING, maxNoVotes, 1, 999,
+            "Max. 'No' votes to cancel a shutdown");
+
+        msgWarn = config.getString("Warn", MESSAGES, msgWarn, "");
+        msgKick = config.getString("Kick", MESSAGES, msgKick, "");
 
         config.save();
     }

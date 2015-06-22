@@ -1,3 +1,5 @@
+FAS.msg.votefailed=*** Vote to shutdown server failed
+
 FAS.error.toosoon=*** It is too soon since the last vote to initiate another one. Try again in %d seconds.
 FAS.error.notenoughplayers=*** Need at least %d players online to initiate a vote.
 FAS.error.novoteinprogress=*** No vote is in progress; try '/shutdown'

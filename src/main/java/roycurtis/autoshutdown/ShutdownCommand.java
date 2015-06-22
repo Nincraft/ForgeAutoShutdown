@@ -5,6 +5,8 @@ import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.StatCollector;
 
 import java.time.Instant;
 import java.util.*;
@@ -26,24 +28,6 @@ public class ShutdownCommand implements ICommand
     {
         INSTANCE = ForgeAutoShutdown.INSTANCE;
         SERVER   = MinecraftServer.getServer();
-    }
-
-    @Override
-    public String getCommandName()
-    {
-        return "shutdown";
-    }
-
-    @Override
-    public String getCommandUsage(ICommandSender p_71518_1_)
-    {
-        return "/shutdown <yes|no>";
-    }
-
-    @Override
-    public List getCommandAliases()
-    {
-        return ALIASES;
     }
 
     @Override
@@ -72,8 +56,7 @@ public class ShutdownCommand implements ICommand
         if (players.size() < Config.minVoters)
             throw new CommandException("FAS.error.notenoughplayers", Config.minVoters);
 
-        lastVote = new Date();
-        voting   = true;
+        voting = true;
     }
 
     private void processVote(ICommandSender sender, String[] args)
@@ -90,20 +73,49 @@ public class ShutdownCommand implements ICommand
         INSTANCE.task.performShutdown();
     }
 
+    private void voteFailure()
+    {
+        String msg = StatCollector.translateToFallback("FAS.msg.votefailed");
+
+        SERVER.getConfigurationManager()
+            .sendChatMsg( new ChatComponentText(msg) );
+
+        lastVote = new Date();
+        voting   = false;
+    }
+
     @Override
-    public boolean canCommandSenderUseCommand(ICommandSender p_71519_1_)
+    public String getCommandName()
+    {
+        return "shutdown";
+    }
+
+    @Override
+    public String getCommandUsage(ICommandSender sender)
+    {
+        return "/shutdown <yes|no>";
+    }
+
+    @Override
+    public List getCommandAliases()
+    {
+        return ALIASES;
+    }
+
+    @Override
+    public boolean canCommandSenderUseCommand(ICommandSender sender)
     {
         return Config.voteEnabled;
     }
 
     @Override
-    public List addTabCompletionOptions(ICommandSender p_71516_1_, String[] p_71516_2_)
+    public List addTabCompletionOptions(ICommandSender sender, String[] args)
     {
         return OPTIONS;
     }
 
     @Override
-    public boolean isUsernameIndex(String[] p_82358_1_, int p_82358_2_)
+    public boolean isUsernameIndex(String[] args, int idx)
     {
         return false;
     }
