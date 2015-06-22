@@ -61,7 +61,7 @@ public class ShutdownCommand implements ICommand
             throw new WrongUsageException("FAS.error.novoteinprogress");
 
         Date now        = new Date();
-        long interval   = INSTANCE.cfgVoteInterval * 60 * 1000;
+        long interval   = Config.voteInterval * 60 * 1000;
         long difference = now.getTime() - lastVote.getTime();
 
         if (difference < interval)
@@ -69,8 +69,8 @@ public class ShutdownCommand implements ICommand
 
         List players = SERVER.getConfigurationManager().playerEntityList;
 
-        if (players.size() < INSTANCE.cfgMinVoters)
-            throw new CommandException("FAS.error.notenoughplayers", INSTANCE.cfgMinVoters);
+        if (players.size() < Config.minVoters)
+            throw new CommandException("FAS.error.notenoughplayers", Config.minVoters);
 
         lastVote = new Date();
         voting   = true;
@@ -93,7 +93,7 @@ public class ShutdownCommand implements ICommand
     @Override
     public boolean canCommandSenderUseCommand(ICommandSender p_71519_1_)
     {
-        return INSTANCE.cfgVoteEnabled;
+        return Config.voteEnabled;
     }
 
     @Override

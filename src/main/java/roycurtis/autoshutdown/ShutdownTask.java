@@ -44,7 +44,7 @@ public class ShutdownTask extends TimerTask
 
     void performWarning()
     {
-        String warning = INSTANCE.msgWarn.replace( "%m", warningsLeft.toString() );
+        String warning = Config.msgWarn.replace( "%m", warningsLeft.toString() );
 
         SERVER.getConfigurationManager()
             .sendChatMsg( new ChatComponentText("*** " + warning) );
@@ -58,7 +58,7 @@ public class ShutdownTask extends TimerTask
         for (Object value : SERVER.getConfigurationManager().playerEntityList)
         {
             EntityPlayerMP player = (EntityPlayerMP) value;
-            player.playerNetServerHandler.kickPlayerFromServer(INSTANCE.msgKick);
+            player.playerNetServerHandler.kickPlayerFromServer(Config.msgKick);
         }
 
         SERVER.initiateShutdown();

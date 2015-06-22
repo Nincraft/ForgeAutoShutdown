@@ -7,7 +7,6 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraftforge.common.config.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,26 +26,18 @@ import java.util.Timer;
 )
 public class ForgeAutoShutdown
 {
-    static final String MODID   = "forgeautoshutdown";
+    // Frozen at 1.0.1, to prevent misleading world save errors
     static final String VERSION = "1.0.1";
+    static final String MODID   = "forgeautoshutdown";
     static final Logger LOGGER  = LogManager.getFormatterLogger(MODID);
 
     @Mod.Instance(MODID)
     static ForgeAutoShutdown INSTANCE;
 
-    Configuration config;
-    ShutdownTask  task;
-    Timer         timer;
-
-    boolean cfgVoteEnabled  = true;
-    int     cfgHour         = 6;
-    int     cfgMinute       = 0;
-    int     cfgVoteInterval = 15;
-    Integer cfgMinVoters    = 2;
-    int     cfgMaxNoVotes   = 1;
-
-    String msgWarn = "Server is shutting down in %m minute(s).";
-    String msgKick = "Scheduled server shutdown";
+    // Instances are not created here, as not to waste memory if this mod is loaded as a
+    // client mod by user error.
+    ShutdownTask task;
+    Timer        timer;
 
     @EventHandler
     @SideOnly(Side.CLIENT)
@@ -59,26 +50,13 @@ public class ForgeAutoShutdown
     @EventHandler
     @SideOnly(Side.SERVER)
     /**
-     * Sets up timer thread and the configuration file. Automatically creates the config
-     * file and populates it with defaults, if missing.
+     * Sets up timer thread and loads/creates the configuration file
      */
     public void serverPreInit(FMLPreInitializationEvent event)
     {
-        config = new Configuration( event.getSuggestedConfigurationFile() );
-        timer  = new Timer("Forge Auto-Shutdown timer");
+        timer = new Timer("Forge Auto-Shutdown timer");
 
-        cfgHour   = config.getInt("Hour", "Schedule", cfgHour, 0, 23, "");
-        cfgMinute = config.getInt("Minute", "Schedule", cfgMinute, 0, 59, "");
-
-        cfgVoteEnabled  = config.getBoolean("VoteEnabled", "Voting", cfgVoteEnabled, "");
-        cfgVoteInterval = config.getInt("VoteInterval", "Voting", cfgVoteInterval, 0, 99, "");
-        cfgMinVoters    = config.getInt("MinVoters", "Voting", cfgMinVoters, 0, 99, "");
-        cfgMaxNoVotes   = config.getInt("MaxNoVotes", "Voting", cfgMaxNoVotes, 1, 99, "");
-
-        msgWarn = config.getString("Warn", "Messages", msgWarn, "");
-        msgKick = config.getString("Kick", "Messages", msgKick, "");
-
-        config.save();
+        Config.init( event.getSuggestedConfigurationFile() );
     }
 
     @EventHandler
@@ -98,8 +76,8 @@ public class ForgeAutoShutdown
         DateFormat      dateFormat = new SimpleDateFormat("HH:mm:ss dd-MMMM-yyyy");
         ShutdownCommand command    = new ShutdownCommand();
         Calendar        shutdownAt = Calendar.getInstance();
-        shutdownAt.set(Calendar.HOUR_OF_DAY, cfgHour);
-        shutdownAt.set(Calendar.MINUTE, cfgMinute);
+        shutdownAt.set(Calendar.HOUR_OF_DAY, Config.hour);
+        shutdownAt.set(Calendar.MINUTE, Config.minute);
         shutdownAt.set(Calendar.SECOND, 0);
 
         task = new ShutdownTask();

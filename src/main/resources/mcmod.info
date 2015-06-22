@@ -2,7 +2,7 @@
 {
   "modid": "forgeautoshutdown",
   "name": "Forge Auto-Shutdown",
-  "description": "Automatically shuts down the server after a schedule, or by player vote.",
+  "description": "Automatically shuts down the server by schedule, or by player vote.",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "https://github.com/Gamealition/ForgeAutoShutdown",
