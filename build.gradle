@@ -1,23 +1,30 @@
-buildscript {
-    repositories {
+buildscript
+{
+    // Repositories and plugins used by this buildscript. For internal Gradle use only.
+    repositories
+    {
         mavenCentral()
-        maven {
+        maven
+        {
             name = "forge"
             url = "http://files.minecraftforge.net/maven"
         }
-        maven {
+        maven
+        {
             name = "sonatype"
             url = "https://oss.sonatype.org/content/repositories/snapshots/"
         }
     }
-    dependencies {
+    dependencies
+    {
         classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
     }
 }
 
+// Applies the custom Gradle plugin Forge uses, for Forge-specific tasks
 apply plugin: 'forge'
 
-version = "1.0"
+version = "1.0.1"
 group   = "roycurtis.autoshutdown"
 
 minecraft
@@ -28,12 +35,25 @@ minecraft
 
 jar
 {
-    // Sets the output directory of the mod's jar file. Can be an absolute path to your
-	// Minecraft mods folder for quicker testing
+    // Sets the output directory of the mod's jar file
     destinationDir = file 'output'
 }
 
-idea { module { inheritOutputDirs = true } }
+compileJava
+{
+    // Enforces use of Java 1.7 language level
+    sourceCompatibility = "1.7"
+    targetCompatibility = "1.7"
+}
+
+idea
+{
+    module
+    {
+        // Fixes issues with debugging in IntelliJ
+        inheritOutputDirs = true
+    }
+}
 
 processResources
 {
