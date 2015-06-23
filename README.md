@@ -1,9 +1,8 @@
-ForgeAutoShutdown is a server-only mod that schedules a specific time of the day for the server to shut down. This allows the server to be automatically restarted daily by a shell script or Windows service.
+ForgeAutoShutdown is a server-only mod that schedules a specific time of the day for the server to shut down. This allows the server to be automatically restarted daily by a shell script or Windows service. Players can also be allowed to vote in a manual shutdown, so a lagged out server would not require admin intervention.
 
 # Requirements
 
-* Minecraft Forge server for 1.7.10 [10.13.4.1448](http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.7.10-10.13.4.1448-1.7.10/forge-1.7.10-10.13.4.1448-1.7.10-installer.jar)
-  * Tested to work on [10.13.2.1291](http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.7.10-10.13.2.1291/forge-1.7.10-10.13.2.1291-installer.jar)
+* Minecraft Forge server for 1.7.10, at least [10.13.4.1448](http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.7.10-10.13.4.1448-1.7.10/forge-1.7.10-10.13.4.1448-1.7.10-installer.jar)
 * A [wrapper script](https://github.com/Gamealition/Minecraft-Scripts), if server intends to restart after shutdown
 
 # Installation
@@ -16,11 +15,9 @@ ForgeAutoShutdown is a server-only mod that schedules a specific time of the day
 
 ## Example config
 
-This example configures a server to automatically shutdown at 9:30AM (09:30) server time. Warnings will begin at 9:25AM (09:25). The messages are intended for servers that use ForgeAutoShutdown for automatic daily restarts.
+This example configures a server to automatically shutdown at 9:30AM (09:30) server time. Warnings will begin at 9:25AM (09:25). Voting is enabled, where two players are required to be online to start a vote. The messages are intended for servers that use ForgeAutoShutdown for automatic daily restarts.
 
 ```
-# Configuration file
-
 messages {
     #  [default: Scheduled server shutdown]
     S:Kick=Daily restart; please return in 5 minutes
@@ -29,13 +26,26 @@ messages {
     S:Warn=Server will perform its daily restart in %m minute(s).
 }
 
-
 schedule {
-    #  [range: 0 ~ 23, default: 6]
+    # Hour of the shutdown process (e.g. 8 for 8 AM) [range: 0 ~ 23, default: 6]
     I:Hour=9
 
-    #  [range: 0 ~ 59, default: 0]
+    # Minute of the shutdown process (e.g. 30 for half-past) [range: 0 ~ 59, default: 0]
     I:Minute=25
+}
+
+voting {
+    # If true, players may vote to shut server down using '/shutdown' [default: true]
+    B:VoteEnabled=true
+    
+    # Max. 'No' votes to cancel a shutdown [range: 1 ~ 999, default: 1]
+    I:MaxNoVotes=1
+
+    # Min. players online required to begin a vote [range: 1 ~ 999, default: 2]
+    I:MinVoters=2
+
+    # Min. minutes after a failed vote before new one can begin [range: 0 ~ 1440, default: 15]
+    I:VoteInterval=15
 }
 ```
 
@@ -47,6 +57,14 @@ ForgeAutoShutdown will log a message at the INFO level on server startup, with a
 If this message is missing, the mod has not been correctly installed. If the mod is installed on a Minecraft client, it will log an ERROR to the console and not perform any function. It will not crash or disable the client.
 
 Scheduled shutdown will always happen within the next 24 hours after server startup. This means that if the server starts and has missed the shutdown time even by a few minutes, it will schedule for the next day.
+
+## Voting
+
+If enabled, players may vote a manual shutdown. To do so, a player must execute `/shutdown`. Then, **all** players (including the vote initiator) must vote using `/shutdown yes` or `/shutdown no`.
+
+If the amount of `no` votes reach a maximum threshold, the vote fails. If a vote is cast and too many players have disconnected in the meantime, the vote fails. If a vote fails, another one will not be able to start until a configured amount of minutes has passed.
+
+If the vote succeeds, the server will instantly shutdown without warning. If an appropriate means of automatic restart is in place, it should be expected that the server will go up within a few minutes.
 
 # Building
 
