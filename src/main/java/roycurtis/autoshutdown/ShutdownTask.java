@@ -4,8 +4,6 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.IChatComponent;
 
 import java.util.TimerTask;
 
@@ -17,7 +15,7 @@ public class ShutdownTask extends TimerTask
     boolean executeTick  = false;
     Byte    warningsLeft = 5;
 
-    public ShutdownTask()
+    ShutdownTask()
     {
         INSTANCE = ForgeAutoShutdown.INSTANCE;
         SERVER   = MinecraftServer.getServer();
@@ -35,7 +33,7 @@ public class ShutdownTask extends TimerTask
         if (!executeTick) return;
 
         if (warningsLeft == 0)
-            performShutdown();
+            performShutdown(Config.msgKick);
         else
             performWarning();
 
@@ -44,23 +42,21 @@ public class ShutdownTask extends TimerTask
 
     void performWarning()
     {
-        String warning = INSTANCE.msgWarn.replace( "%m", warningsLeft.toString() );
+        String warning = Config.msgWarn.replace( "%m", warningsLeft.toString() );
 
-        IChatComponent warningChat = new ChatComponentText("*** " + warning);
-
-        for (Object player : SERVER.getConfigurationManager().playerEntityList)
-            ( (EntityPlayerMP) player ).addChatMessage(warningChat);
-
+        Util.broadcast(SERVER, "*** " + warning);
         ForgeAutoShutdown.LOGGER.info(warning);
         warningsLeft--;
     }
 
-    void performShutdown()
+    void performShutdown(String reason)
     {
+        reason = Util.translate(reason);
+
         for (Object value : SERVER.getConfigurationManager().playerEntityList)
         {
             EntityPlayerMP player = (EntityPlayerMP) value;
-            player.playerNetServerHandler.kickPlayerFromServer(INSTANCE.msgKick);
+            player.playerNetServerHandler.kickPlayerFromServer(reason);
         }
 
         SERVER.initiateShutdown();

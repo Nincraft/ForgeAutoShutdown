@@ -2,9 +2,8 @@ ForgeAutoShutdown is a server-only mod that schedules a specific time of the day
 
 # Requirements
 
-* Minecraft Forge server for 1.7.10
-  * At least [10.13.2.1291](http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.7.10-10.13.2.1291/forge-1.7.10-10.13.2.1291-installer.jar)
-  * Tested to work on [10.13.4.1448](http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.7.10-10.13.4.1448-1.7.10/forge-1.7.10-10.13.4.1448-1.7.10-installer.jar)
+* Minecraft Forge server for 1.7.10 [10.13.4.1448](http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.7.10-10.13.4.1448-1.7.10/forge-1.7.10-10.13.4.1448-1.7.10-installer.jar)
+  * Tested to work on [10.13.2.1291](http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.7.10-10.13.2.1291/forge-1.7.10-10.13.2.1291-installer.jar)
 * A [wrapper script](https://github.com/Gamealition/Minecraft-Scripts), if server intends to restart after shutdown
 
 # Installation
