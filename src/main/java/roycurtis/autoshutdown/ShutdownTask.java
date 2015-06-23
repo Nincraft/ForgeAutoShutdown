@@ -4,7 +4,6 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
 
 import java.util.TimerTask;
 
@@ -15,7 +14,6 @@ public class ShutdownTask extends TimerTask
 
     boolean executeTick  = false;
     Byte    warningsLeft = 5;
-    boolean hasStarted   = true;
 
     ShutdownTask()
     {
@@ -35,7 +33,7 @@ public class ShutdownTask extends TimerTask
         if (!executeTick) return;
 
         if (warningsLeft == 0)
-            performShutdown();
+            performShutdown(Config.msgKick);
         else
             performWarning();
 
@@ -46,19 +44,19 @@ public class ShutdownTask extends TimerTask
     {
         String warning = Config.msgWarn.replace( "%m", warningsLeft.toString() );
 
-        SERVER.getConfigurationManager()
-            .sendChatMsg( new ChatComponentText("*** " + warning) );
-
+        Util.broadcast(SERVER, "*** " + warning);
         ForgeAutoShutdown.LOGGER.info(warning);
         warningsLeft--;
     }
 
-    void performShutdown()
+    void performShutdown(String reason)
     {
+        reason = Util.translate(reason);
+
         for (Object value : SERVER.getConfigurationManager().playerEntityList)
         {
             EntityPlayerMP player = (EntityPlayerMP) value;
-            player.playerNetServerHandler.kickPlayerFromServer(Config.msgKick);
+            player.playerNetServerHandler.kickPlayerFromServer(reason);
         }
 
         SERVER.initiateShutdown();

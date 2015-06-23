@@ -35,7 +35,7 @@ class Config
     {
         config = new Configuration(configFile);
 
-        config.setCategoryComment("Schedule",
+        config.setCategoryComment(SCHEDULE,
             "All times are 24 hour (military) format, relative to machine's local time");
 
         hour   = config.getInt("Hour", SCHEDULE, hour, 0, 23,
@@ -43,14 +43,20 @@ class Config
         minute = config.getInt("Minute", SCHEDULE, minute, 0, 59,
             "Minute of the shutdown process (e.g. 30 for half-past)");
 
+        config.setCategoryComment(VOTING,
+            "Allows players to shut down the server without admin intervention");
+
         voteEnabled  = config.getBoolean("VoteEnabled", VOTING, voteEnabled,
             "If true, players may vote to shut server down using '/shutdown'");
-        voteInterval = config.getInt("VoteInterval", VOTING, voteInterval, 0, 999,
+        voteInterval = config.getInt("VoteInterval", VOTING, voteInterval, 0, 1440,
             "Min. minutes after a failed vote before new one can begin");
-        minVoters    = config.getInt("MinVoters", VOTING, minVoters, 0, 999,
+        minVoters    = config.getInt("MinVoters", VOTING, minVoters, 1, 999,
             "Min. players online required to begin a vote");
         maxNoVotes   = config.getInt("MaxNoVotes", VOTING, maxNoVotes, 1, 999,
             "Max. 'No' votes to cancel a shutdown");
+
+        config.setCategoryComment(MESSAGES,
+            "Customizable messages for the shutdown process");
 
         msgWarn = config.getString("Warn", MESSAGES, msgWarn, "");
         msgKick = config.getString("Kick", MESSAGES, msgKick, "");

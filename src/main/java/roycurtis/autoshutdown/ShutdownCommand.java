@@ -1,12 +1,8 @@
 package roycurtis.autoshutdown;
 
-import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.StatCollector;
 
 import java.time.Instant;
 import java.util.*;
@@ -33,6 +29,9 @@ public class ShutdownCommand implements ICommand
     @Override
     public void processCommand(ICommandSender sender, String[] args)
     {
+        if (sender == SERVER)
+            throw new CommandException("FAS.error.playersonly");
+
         if (voting)
             processVote(sender, args);
         else
@@ -42,7 +41,7 @@ public class ShutdownCommand implements ICommand
     private void initiateVote(ICommandSender sender, String[] args)
     {
         if (args.length >= 1)
-            throw new WrongUsageException("FAS.error.novoteinprogress");
+            throw new CommandException("FAS.error.novoteinprogress");
 
         Date now        = new Date();
         long interval   = Config.voteInterval * 60 * 1000;
@@ -56,6 +55,7 @@ public class ShutdownCommand implements ICommand
         if (players.size() < Config.minVoters)
             throw new CommandException("FAS.error.notenoughplayers", Config.minVoters);
 
+        Util.broadcast(SERVER, "FAS.msg.votebegun");
         voting = true;
     }
 
@@ -64,21 +64,52 @@ public class ShutdownCommand implements ICommand
         if (args.length < 1)
             throw new CommandException("FAS.error.voteinprogress");
         else if ( !OPTIONS.contains( args[0].toLowerCase() ) )
-            throw new WrongUsageException("FAS.error.incorrectsyntax");
+            throw new CommandException("FAS.error.incorrectsyntax");
+
+        String  name = sender.getCommandSenderName();
+        Boolean vote = args[0].equalsIgnoreCase("yes");
+
+        if ( votes.containsKey(name) )
+            Util.chat(sender, "FAS.msg.votecleared");
+
+        votes.put(name, vote);
+        Util.chat(sender, "FAS.msg.voterecorded");
+        checkVotes();
+    }
+
+    private void checkVotes()
+    {
+        int players = SERVER.getConfigurationManager().playerEntityList.size();
+
+        if (players < Config.minVoters)
+        {
+            voteFailure("FAS.fail.notenoughplayers");
+            return;
+        }
+
+        int yes = Collections.frequency(votes.values(), true);
+        int no  = Collections.frequency(votes.values(), false);
+
+        if (no >= Config.maxNoVotes)
+        {
+            voteFailure("FAS.fail.maxnovotes");
+            return;
+        }
+
+        if (yes + no == players)
+            voteSuccess();
     }
 
     private void voteSuccess()
     {
         ForgeAutoShutdown.LOGGER.info("Server shutdown initiated by vote");
-        INSTANCE.task.performShutdown();
+        INSTANCE.task.performShutdown("FAS.msg.usershutdown");
     }
 
-    private void voteFailure()
+    private void voteFailure(String reason)
     {
-        String msg = StatCollector.translateToFallback("FAS.msg.votefailed");
-
-        SERVER.getConfigurationManager()
-            .sendChatMsg( new ChatComponentText(msg) );
+        Util.broadcast(SERVER, reason);
+        votes.clear();
 
         lastVote = new Date();
         voting   = false;
