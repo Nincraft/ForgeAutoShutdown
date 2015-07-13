@@ -53,7 +53,7 @@ public class ShutdownTask extends TimerTask
     {
         reason = Util.translate(reason);
 
-        for (Object value : SERVER.getConfigurationManager().playerEntityList)
+        for ( Object value : SERVER.getConfigurationManager().playerEntityList.toArray() )
         {
             EntityPlayerMP player = (EntityPlayerMP) value;
             player.playerNetServerHandler.kickPlayerFromServer(reason);
