@@ -67,7 +67,7 @@ public class ForgeAutoShutdown
      * * Schedules ShutdownTask to run at the scheduled time, then every minute after
      *
      * The use of a tick handler ensures the shutdown process is run in the main thread,
-     * to prevent issues with cross-thread contamination. As server ticks run 20 times a
+     * to prevent issues with cross-thread contamination. As the handler run 40 times a
      * second, the event is just a boolean check. This means the scheduled task's role is
      * to unlock the tick handler.
      */

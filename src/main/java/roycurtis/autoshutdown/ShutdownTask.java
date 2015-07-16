@@ -1,5 +1,6 @@
 package roycurtis.autoshutdown;
 
+import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -27,10 +28,12 @@ public class ShutdownTask extends TimerTask
         executeTick = true;
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onServerTick(TickEvent.ServerTickEvent event)
     {
-        if (!executeTick) return;
+        // Refrain from running at the end of server ticking
+        if (!executeTick || event.phase == TickEvent.Phase.END)
+            return;
 
         if (warningsLeft == 0)
             performShutdown(Config.msgKick);

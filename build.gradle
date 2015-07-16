@@ -24,7 +24,7 @@ buildscript
 // Applies the custom Gradle plugin Forge uses, for Forge-specific tasks
 apply plugin: 'forge'
 
-version = "1.0.3"
+version = "1.0.4"
 group   = "roycurtis.autoshutdown"
 
 minecraft
@@ -37,6 +37,7 @@ jar
 {
     // Sets the output directory of the mod's jar file
     destinationDir = file 'output'
+    classifier "1.7.10"
 }
 
 compileJava
