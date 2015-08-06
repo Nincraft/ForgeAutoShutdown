@@ -1,29 +1,42 @@
 package roycurtis.autoshutdown;
 
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
+import org.apache.logging.log4j.Logger;
 
 import java.time.Instant;
 import java.util.*;
 
+/**
+ * Singleton that handles the `/shutdown` voting command
+ */
 public class ShutdownCommand implements ICommand
 {
     static final List ALIASES = Collections.singletonList("shutdown");
     static final List OPTIONS = Arrays.asList("yes", "no");
 
-    final ForgeAutoShutdown INSTANCE;
-    final MinecraftServer   SERVER;
+    private static ShutdownCommand INSTANCE;
+    private static MinecraftServer SERVER;
+    private static Logger          LOGGER;
 
     HashMap<String, Boolean> votes = new HashMap<>();
 
     Date    lastVote = Date.from(Instant.EPOCH);
     boolean voting   = false;
 
-    ShutdownCommand()
+    public static void create(FMLServerStartingEvent event)
     {
-        INSTANCE = ForgeAutoShutdown.INSTANCE;
+        if (INSTANCE != null)
+            throw new RuntimeException("ShutdownCommand is already setup");
+
+        INSTANCE = new ShutdownCommand();
         SERVER   = MinecraftServer.getServer();
+        LOGGER   = ForgeAutoShutdown.LOGGER;
+
+        event.registerServerCommand(INSTANCE);
+        LOGGER.debug("`/shutdown` command registered");
     }
 
     @Override
@@ -35,10 +48,12 @@ public class ShutdownCommand implements ICommand
         if (voting)
             processVote(sender, args);
         else
-            initiateVote(sender, args);
+            initiateVote(args);
     }
 
-    private void initiateVote(ICommandSender sender, String[] args)
+    private ShutdownCommand() { }
+
+    private void initiateVote(String[] args)
     {
         if (args.length >= 1)
             throw new CommandException("FAS.error.novoteinprogress");
@@ -102,8 +117,8 @@ public class ShutdownCommand implements ICommand
 
     private void voteSuccess()
     {
-        ForgeAutoShutdown.LOGGER.info("Server shutdown initiated by vote");
-        INSTANCE.task.performShutdown("FAS.msg.usershutdown");
+        LOGGER.info("Server shutdown initiated by vote");
+        ShutdownTask.get().performShutdown("FAS.msg.usershutdown");
     }
 
     private void voteFailure(String reason)
@@ -115,6 +130,7 @@ public class ShutdownCommand implements ICommand
         voting   = false;
     }
 
+    // <editor-fold desc="ICommand">
     @Override
     public String getCommandName()
     {
@@ -157,4 +173,5 @@ public class ShutdownCommand implements ICommand
         ICommand command = (ICommand) o;
         return command.getCommandName().compareTo( getCommandName() );
     }
+    // </editor-fold>
 }

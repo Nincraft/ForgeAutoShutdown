@@ -15,12 +15,13 @@ class Config
 
     static Configuration config;
 
-    static int hour   = 6;
-    static int minute = 0;
+    static boolean scheduleEnabled = true;
+    static int     scheduleHour    = 6;
+    static int     scheduleMinute  = 0;
 
     static boolean voteEnabled  = true;
     static int     voteInterval = 15;
-    static Integer minVoters    = 2;
+    static int     minVoters    = 2;
     static int     maxNoVotes   = 1;
 
     static String msgWarn = "Server is shutting down in %m minute(s).";
@@ -38,9 +39,11 @@ class Config
         config.setCategoryComment(SCHEDULE,
             "All times are 24 hour (military) format, relative to machine's local time");
 
-        hour   = config.getInt("Hour", SCHEDULE, hour, 0, 23,
+        scheduleEnabled = config.getBoolean("Enabled", SCHEDULE, scheduleEnabled,
+            "If true, server will automatically shutdown at given time of day");
+        scheduleHour    = config.getInt("Hour", SCHEDULE, scheduleHour, 0, 23,
             "Hour of the shutdown process (e.g. 8 for 8 AM)");
-        minute = config.getInt("Minute", SCHEDULE, minute, 0, 59,
+        scheduleMinute  = config.getInt("Minute", SCHEDULE, scheduleMinute, 0, 59,
             "Minute of the shutdown process (e.g. 30 for half-past)");
 
         config.setCategoryComment(VOTING,
@@ -58,10 +61,17 @@ class Config
         config.setCategoryComment(MESSAGES,
             "Customizable messages for the shutdown process");
 
-        msgWarn = config.getString("Warn", MESSAGES, msgWarn, "");
-        msgKick = config.getString("Kick", MESSAGES, msgKick, "");
+        msgWarn = config.getString("Warn", MESSAGES, msgWarn,
+            "Pre-shutdown warning message. Use %m for minutes remaining");
+        msgKick = config.getString("Kick", MESSAGES, msgKick,
+            "Message shown to player on disconnect during shutdown");
 
         config.save();
+    }
+
+    static boolean isNothingEnabled()
+    {
+        return !scheduleEnabled && !voteEnabled && !watchdogEnabled;
     }
 
     private Config() { }
