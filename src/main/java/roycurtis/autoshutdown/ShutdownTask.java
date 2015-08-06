@@ -1,5 +1,6 @@
 package roycurtis.autoshutdown;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -23,8 +24,14 @@ public class ShutdownTask extends TimerTask
     }
 
     @Override
+    /**
+     * Tick handler is registered on first timer call, so as not to have a useless
+     * handler running every tick for the server's lifetime
+     */
     public void run()
     {
+        // Safe call from timer thread; event bus collection is ConcurrentHashMap
+        FMLCommonHandler.instance().bus().register(this);
         executeTick = true;
     }
 

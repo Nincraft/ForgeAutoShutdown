@@ -89,7 +89,6 @@ public class ForgeAutoShutdown
 
         Date shutdownAtDate = shutdownAt.getTime();
 
-        FMLCommonHandler.instance().bus().register(task);
         timer.schedule(task, shutdownAtDate, 60 * 1000);
         event.registerServerCommand(command);
         LOGGER.info( "Next automatic shutdown: %s", dateFormat.format(shutdownAtDate) );
