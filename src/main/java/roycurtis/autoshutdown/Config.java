@@ -11,6 +11,7 @@ class Config
 {
     private static final String SCHEDULE = "Schedule";
     private static final String VOTING   = "Voting";
+    private static final String WATCHDOG = "Watchdog";
     private static final String MESSAGES = "Messages";
 
     static Configuration config;
@@ -23,6 +24,13 @@ class Config
     static int     voteInterval = 15;
     static int     minVoters    = 2;
     static int     maxNoVotes   = 1;
+
+    static boolean watchdogEnabled  = false;
+    static boolean attemptSafeKill  = true;
+    static int     watchdogInterval = 10;
+    static int     maxTickTimeout   = 40;
+    static int     lowTPSThreshold  = 5;
+    static int     lowTPSTimeout    = 60;
 
     static String msgWarn = "Server is shutting down in %m minute(s).";
     static String msgKick = "Scheduled server shutdown";
@@ -57,6 +65,22 @@ class Config
             "Min. players online required to begin a vote");
         maxNoVotes   = config.getInt("MaxNoVotes", VOTING, maxNoVotes, 1, 999,
             "Max. 'No' votes to cancel a shutdown");
+
+        config.setCategoryComment(WATCHDOG,
+            "Monitors the server and tries to kill it if unresponsive");
+
+        watchdogEnabled  = config.getBoolean("Enabled", WATCHDOG, watchdogEnabled,
+            "If true, try to shutdown the server if unresponsive");
+        attemptSafeKill  = config.getBoolean("AttemptSafeKill", WATCHDOG, attemptSafeKill,
+            "If true, try to save worlds before forcing a kill");
+        watchdogInterval = config.getInt("Interval", WATCHDOG, watchdogInterval, 1, 3600,
+            "How many seconds between checking for an unresponsive server");
+        maxTickTimeout   = config.getInt("Timeout", WATCHDOG, maxTickTimeout, 1, 3600,
+            "Max. seconds a single server tick may last before killing");
+        lowTPSThreshold  = config.getInt("LowTPSThreshold", WATCHDOG, lowTPSThreshold, 0, 19,
+            "TPS below this value is considered 'too low'");
+        lowTPSTimeout    = config.getInt("LowTPSTimeout", WATCHDOG, lowTPSTimeout, 1, 3600,
+            "Max. seconds TPS may stay below threshold before killing");
 
         config.setCategoryComment(MESSAGES,
             "Customizable messages for the shutdown process");

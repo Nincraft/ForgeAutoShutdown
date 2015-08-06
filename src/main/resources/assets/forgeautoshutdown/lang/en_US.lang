@@ -10,5 +10,5 @@ FAS.error.toosoon=*** It is too soon since the last vote to initiate another one
 FAS.error.notenoughplayers=*** Need at least %d players online to initiate a vote
 FAS.error.novoteinprogress=*** No vote is in progress; try '/shutdown'
 FAS.error.voteinprogress=*** Vote in progress; try '/shutdown yes' or '/shutdown no'
-FAS.error.incorrectsyntax=*** Incorrect syntax; try '/shutdown yes' or '/shutdown no'
+FAS.error.votebadsyntax=*** Incorrect syntax; try '/shutdown yes' or '/shutdown no'
 FAS.error.playersonly=*** Only players may use this command; try '/stop' instead

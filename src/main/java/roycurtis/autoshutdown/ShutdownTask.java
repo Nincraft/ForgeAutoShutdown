@@ -4,7 +4,6 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.Logger;
 
@@ -25,30 +24,23 @@ import java.util.TimerTask;
  */
 public class ShutdownTask extends TimerTask
 {
-    static final Format DATE = new SimpleDateFormat("HH:mm dd MMM");
+    static final Format DATE = new SimpleDateFormat("HH:mm MMM d");
 
     private static ShutdownTask    INSTANCE;
     private static MinecraftServer SERVER;
     private static Logger          LOGGER;
     private static Timer           TIMER;
 
-    boolean executeTick  = false;
-    Byte    warningsLeft = 5;
-
-    public static ShutdownTask get()
-    {
-        return INSTANCE;
-    }
-
+    /** Creates a timer task to run at the configured time of day */
     public static void create()
     {
         if (INSTANCE != null)
-            throw new RuntimeException("ShutdownTask is already setup");
+            throw new RuntimeException("ShutdownTask can only be created once");
 
         INSTANCE = new ShutdownTask();
         SERVER   = MinecraftServer.getServer();
         LOGGER   = ForgeAutoShutdown.LOGGER;
-        TIMER    = new Timer("Forge Auto-Shutdown timer");
+        TIMER    = new Timer("ForgeAutoShutdown timer");
 
         Calendar shutdownAt = Calendar.getInstance();
         shutdownAt.set(Calendar.HOUR_OF_DAY, Config.scheduleHour);
@@ -65,6 +57,9 @@ public class ShutdownTask extends TimerTask
         TIMER.schedule(INSTANCE, shutdownAtDate, 60 * 1000);
         LOGGER.info( "Next automatic shutdown: %s", DATE.format(shutdownAtDate) );
     }
+
+    boolean executeTick  = false;
+    Byte    warningsLeft = 5;
 
     @Override
     /**
@@ -87,7 +82,7 @@ public class ShutdownTask extends TimerTask
             return;
 
         if (warningsLeft == 0)
-            performShutdown(Config.msgKick);
+            Util.performShutdown(Config.msgKick);
         else
             performWarning();
 
@@ -104,19 +99,5 @@ public class ShutdownTask extends TimerTask
         Util.broadcast(SERVER, "*** " + warning);
         LOGGER.info(warning);
         warningsLeft--;
-    }
-
-    void performShutdown(String reason)
-    {
-        reason = Util.translate(reason);
-
-        for ( Object value : SERVER.getConfigurationManager().playerEntityList.toArray() )
-        {
-            EntityPlayerMP player = (EntityPlayerMP) value;
-            player.playerNetServerHandler.kickPlayerFromServer(reason);
-        }
-
-        LOGGER.debug("Shutdown initiated because: %s", reason);
-        SERVER.initiateShutdown();
     }
 }

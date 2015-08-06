@@ -24,9 +24,6 @@ public class ForgeAutoShutdown
     static final String MODID   = "ForgeAutoShutdown";
     static final Logger LOGGER  = LogManager.getFormatterLogger(MODID);
 
-    @Mod.Instance(MODID)
-    static ForgeAutoShutdown INSTANCE;
-
     @EventHandler
     @SideOnly(Side.CLIENT)
     public void clientPreInit(FMLPreInitializationEvent event)
@@ -59,5 +56,10 @@ public class ForgeAutoShutdown
         if (Config.voteEnabled)
             ShutdownCommand.create(event);
 
+        if (Config.watchdogEnabled)
+        {
+            HangCommand.create(event);
+            WatchdogTask.create();
+        }
     }
 }

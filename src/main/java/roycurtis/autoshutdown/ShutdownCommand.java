@@ -26,10 +26,11 @@ public class ShutdownCommand implements ICommand
     Date    lastVote = Date.from(Instant.EPOCH);
     boolean voting   = false;
 
+    /** Creates and registers the `/shutdown` command for use */
     public static void create(FMLServerStartingEvent event)
     {
         if (INSTANCE != null)
-            throw new RuntimeException("ShutdownCommand is already setup");
+            throw new RuntimeException("ShutdownCommand can only be created once");
 
         INSTANCE = new ShutdownCommand();
         SERVER   = MinecraftServer.getServer();
@@ -79,7 +80,7 @@ public class ShutdownCommand implements ICommand
         if (args.length < 1)
             throw new CommandException("FAS.error.voteinprogress");
         else if ( !OPTIONS.contains( args[0].toLowerCase() ) )
-            throw new CommandException("FAS.error.incorrectsyntax");
+            throw new CommandException("FAS.error.votebadsyntax");
 
         String  name = sender.getCommandSenderName();
         Boolean vote = args[0].equalsIgnoreCase("yes");
@@ -118,7 +119,7 @@ public class ShutdownCommand implements ICommand
     private void voteSuccess()
     {
         LOGGER.info("Server shutdown initiated by vote");
-        ShutdownTask.get().performShutdown("FAS.msg.usershutdown");
+        Util.performShutdown("FAS.msg.usershutdown");
     }
 
     private void voteFailure(String reason)
