@@ -15,11 +15,7 @@ enum WatchdogState
     /** Monitoring a possibly hung server */
     HUNG,
     /** Monitoring TPS going below threshold */
-    SLOWED,
-    /** Trying to shutdown the server cleanly */
-    SOFT_EXIT,
-    /** Trying to shutdown the server hard */
-    HARD_EXIT
+    SLOWED
 }
 
 /**
@@ -30,7 +26,6 @@ public class WatchdogTask extends TimerTask
     private static WatchdogTask    INSTANCE;
     private static MinecraftServer SERVER;
     private static Logger          LOGGER;
-    private static Timer           TIMER;
 
     public static void create()
     {
@@ -40,10 +35,10 @@ public class WatchdogTask extends TimerTask
         INSTANCE = new WatchdogTask();
         SERVER   = MinecraftServer.getServer();
         LOGGER   = ForgeAutoShutdown.LOGGER;
-        TIMER    = new Timer("ForgeAutoShutdown watchdog");
 
-        int intervalMs = Config.watchdogInterval * 1000;
-        TIMER.schedule(INSTANCE, intervalMs, intervalMs);
+        Timer timer      = new Timer("ForgeAutoShutdown watchdog");
+        int   intervalMs = Config.watchdogInterval * 1000;
+        timer.schedule(INSTANCE, intervalMs, intervalMs);
         LOGGER.debug("Watchdog timer running");
     }
 
@@ -60,15 +55,11 @@ public class WatchdogTask extends TimerTask
         switch (state)
         {
             case MONITOR:
-                onMonitor();  break;
+                onMonitor(); break;
             case HUNG:
-                onHung();     break;
+                onHung();    break;
             case SLOWED:
-                onSlowed();   break;
-            case SOFT_EXIT:
-                onSoftExit(); break;
-            case HARD_EXIT:
-                onHardExit(); break;
+                onSlowed();  break;
         }
     }
 
@@ -95,8 +86,7 @@ public class WatchdogTask extends TimerTask
         {
             LOGGER.debug("No advance in server ticks; switching to HUNG state");
             state     = WatchdogState.HUNG;
-            hungTicks = 0;
-            onHung();
+            hungTicks = 1;
             return;
         }
         else lastServerTick = serverTick;
@@ -125,11 +115,10 @@ public class WatchdogTask extends TimerTask
 
         if (hangSec > Config.maxTickTimeout)
         {
-            state = Config.attemptSafeKill
-                ? WatchdogState.SOFT_EXIT
-                : WatchdogState.HARD_EXIT;
+            LOGGER.debug("Server confirmed hung; attempting to kill");
 
-            LOGGER.debug("Server confirmed hung; switching to %s state", state);
+            if (Config.attemptSoftKill) performSoftKill();
+            else                        performHardKill();
         }
     }
 
@@ -138,24 +127,31 @@ public class WatchdogTask extends TimerTask
         // TODO: implement
     }
 
-    /**
-     * Attempts a "soft exit" of the server by trying to manually save all worlds.
-     * Watchdog will never recover back to MONITOR state from here.
-     */
-    private void onSoftExit()
+    private void performSoftKill()
     {
-        LOGGER.trace("Handling SOFT_EXIT state on watchdog");
+        LOGGER.fatal("Attempting a soft kill of the server...");
+
+        Thread hardKillCheck = new Thread("Shutdown watchdog")
+        {
+            public void run()
+            {
+                try
+                {
+                    Thread.sleep(10000);
+                    System.out.println("Hung during soft kill; trying a hard kill..");
+                    performHardKill();
+                }
+                catch (InterruptedException e) { }
+            }
+        };
+
+        hardKillCheck.start();
+
         // Use exitJava because MinecraftServer registers a shutdown hook
         FMLCommonHandler.instance().exitJava(1, false);
-
-        // TODO: timeout to hard exit
     }
 
-    /**
-     * Attempts a "hard exit" of the server. Watchdog will never recover back to MONITOR
-     * state from here.
-     */
-    private void onHardExit()
+    private void performHardKill()
     {
         LOGGER.fatal("Attempting a hard kill of the server - data may be lost!");
         FMLCommonHandler.instance().exitJava(1, true);

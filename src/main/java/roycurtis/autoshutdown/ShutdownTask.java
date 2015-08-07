@@ -29,7 +29,6 @@ public class ShutdownTask extends TimerTask
     private static ShutdownTask    INSTANCE;
     private static MinecraftServer SERVER;
     private static Logger          LOGGER;
-    private static Timer           TIMER;
 
     /** Creates a timer task to run at the configured time of day */
     public static void create()
@@ -40,8 +39,8 @@ public class ShutdownTask extends TimerTask
         INSTANCE = new ShutdownTask();
         SERVER   = MinecraftServer.getServer();
         LOGGER   = ForgeAutoShutdown.LOGGER;
-        TIMER    = new Timer("ForgeAutoShutdown timer");
 
+        Timer    timer      = new Timer("ForgeAutoShutdown timer");
         Calendar shutdownAt = Calendar.getInstance();
         shutdownAt.set(Calendar.HOUR_OF_DAY, Config.scheduleHour);
         shutdownAt.set(Calendar.MINUTE, Config.scheduleMinute);
@@ -54,7 +53,7 @@ public class ShutdownTask extends TimerTask
 
         Date shutdownAtDate = shutdownAt.getTime();
 
-        TIMER.schedule(INSTANCE, shutdownAtDate, 60 * 1000);
+        timer.schedule(INSTANCE, shutdownAtDate, 60 * 1000);
         LOGGER.info( "Next automatic shutdown: %s", DATE.format(shutdownAtDate) );
     }
 

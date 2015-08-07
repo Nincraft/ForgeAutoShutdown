@@ -1,11 +1,13 @@
 package roycurtis.autoshutdown;
 
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,6 +17,7 @@ import java.util.List;
 public class HangCommand implements ICommand
 {
     static final List ALIASES = Collections.singletonList("hang");
+    static final List OPTIONS = Arrays.asList("1000", "2500", "5000", "10000", "25000", "60000");
 
     private static HangCommand INSTANCE;
     private static Logger      LOGGER;
@@ -35,16 +38,21 @@ public class HangCommand implements ICommand
     @Override
     public void processCommand(ICommandSender sender, String[] args)
     {
-        LOGGER.warn("Initiating a server hang by Thread sleep");
-        while (true)
-            try
-            {
-                Thread.sleep(1000);
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
+
+        int sleep = Integer.MAX_VALUE;
+        if (args.length >= 1)
+            sleep = CommandBase.parseInt(sender, args[0]);
+
+        LOGGER.warn("Sleeping main server thread by %s ms", sleep);
+
+        try
+        {
+            Thread.sleep(sleep);
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     private HangCommand() { }
@@ -59,7 +67,7 @@ public class HangCommand implements ICommand
     @Override
     public String getCommandUsage(ICommandSender sender)
     {
-        return "/hang <sleep|wait>";
+        return "/hang [milliseconds]";
     }
 
     @Override
@@ -77,7 +85,7 @@ public class HangCommand implements ICommand
     @Override
     public List addTabCompletionOptions(ICommandSender sender, String[] args)
     {
-        return Collections.emptyList();
+        return OPTIONS;
     }
 
     @Override

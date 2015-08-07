@@ -26,7 +26,7 @@ class Config
     static int     maxNoVotes   = 1;
 
     static boolean watchdogEnabled  = false;
-    static boolean attemptSafeKill  = true;
+    static boolean attemptSoftKill  = true;
     static int     watchdogInterval = 10;
     static int     maxTickTimeout   = 40;
     static int     lowTPSThreshold  = 5;
@@ -67,12 +67,14 @@ class Config
             "Max. 'No' votes to cancel a shutdown");
 
         config.setCategoryComment(WATCHDOG,
-            "Monitors the server and tries to kill it if unresponsive");
+            "Monitors the server and tries to kill it if unresponsive. " +
+            "USE AT RISK: May corrupt data if killed before or during save");
 
         watchdogEnabled  = config.getBoolean("Enabled", WATCHDOG, watchdogEnabled,
             "If true, try to shutdown the server if unresponsive");
-        attemptSafeKill  = config.getBoolean("AttemptSafeKill", WATCHDOG, attemptSafeKill,
-            "If true, try to save worlds before forcing a kill");
+        attemptSoftKill  = config.getBoolean("AttemptSoftKill", WATCHDOG, attemptSoftKill,
+            "If true, try to save worlds and data before forcing a kill. " +
+            "WARNING: Setting 'false' is faster, but much higher risk of corruption");
         watchdogInterval = config.getInt("Interval", WATCHDOG, watchdogInterval, 1, 3600,
             "How many seconds between checking for an unresponsive server");
         maxTickTimeout   = config.getInt("Timeout", WATCHDOG, maxTickTimeout, 1, 3600,
