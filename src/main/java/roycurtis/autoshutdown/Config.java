@@ -29,8 +29,8 @@ class Config
     static boolean attemptSoftKill  = true;
     static int     watchdogInterval = 10;
     static int     maxTickTimeout   = 40;
-    static int     lowTPSThreshold  = 5;
-    static int     lowTPSTimeout    = 60;
+    static int     lowTPSThreshold  = 10;
+    static int     lowTPSTimeout    = 30;
 
     static String msgWarn = "Server is shutting down in %m minute(s).";
     static String msgKick = "Scheduled server shutdown";

@@ -8,16 +8,6 @@ import org.apache.logging.log4j.Logger;
 import java.util.Timer;
 import java.util.TimerTask;
 
-enum WatchdogState
-{
-    /** Monitoring server for unresponsiveness */
-    MONITOR,
-    /** Monitoring a possibly hung server */
-    HUNG,
-    /** Monitoring TPS going below threshold */
-    SLOWED
-}
-
 /**
  * Singleton that acts as a timer task for monitoring server stalls
  */
@@ -42,101 +32,107 @@ public class WatchdogTask extends TimerTask
         LOGGER.debug("Watchdog timer running");
     }
 
-    private WatchdogState state = WatchdogState.MONITOR;
+    private int lastTick  = 0;
+    private int hungTicks = 0;
+    private int lagTicks  = 0;
 
-    private int lastServerTick = 0;
-    private int hungTicks      = 0;
+    private boolean isHanging = false;
 
     @Override
     public void run()
     {
-        LOGGER.trace("Watchdog timer called");
-
-        switch (state)
-        {
-            case MONITOR:
-                onMonitor(); break;
-            case HUNG:
-                onHung();    break;
-            case SLOWED:
-                onSlowed();  break;
-        }
+        if (isHanging)
+            doHanging();
+        else
+            doMonitor();
     }
 
-    /**
-     * Checks if server is hung on a particular tick, then if TPS is too low for too
-     * long
-     */
-    private void onMonitor()
+    /** Checks if server is hung on a tick, then if TPS is too low for too long */
+    private void doMonitor()
     {
-        LOGGER.trace("Handling MONITOR state on watchdog");
-
-        double avgLatency = MathHelper.average(SERVER.tickTimeArray) * 0.000001;
-        double avgTPS     = Math.min(1000 / avgLatency, 20);
+        double latency = MathHelper.average(SERVER.tickTimeArray) * 0.000001;
+        double tps     = Math.min(1000 / latency, 20);
 
         if ( LOGGER.isTraceEnabled() )
         {
-            LOGGER.trace("Watchdog: 100 tick avg. latency: %.2f / 50 ms", avgLatency);
-            LOGGER.trace("Watchdog: 100 tick avg. TPS: %.2f / 20", avgTPS);
+            LOGGER.trace("Watchdog: 100 tick avg. latency: %.2f / 50 ms", latency);
+            LOGGER.trace("Watchdog: 100 tick avg. TPS: %.2f / 20", tps);
         }
 
         // First, check if server is hung on a tick
         int serverTick = SERVER.getTickCounter();
-        if (serverTick == lastServerTick)
+        if (serverTick == lastTick)
         {
-            LOGGER.debug("No advance in server ticks; switching to HUNG state");
-            state     = WatchdogState.HUNG;
+            LOGGER.debug("No advance in server ticks; server is hanging");
+            isHanging = true;
             hungTicks = 1;
             return;
         }
-        else lastServerTick = serverTick;
+        else lastTick = serverTick;
 
-        // Finally, check if TPS has been too low for too long
-        // TODO
+        // Second, check if TPS has been too low for too long
+        if (tps < Config.lowTPSThreshold)
+        {
+            lagTicks++;
+            int lagSec = lagTicks * Config.watchdogInterval;
+            LOGGER.trace("TPS too low since %d seconds", lagSec);
+
+            if (lagSec >= Config.lowTPSTimeout)
+            {
+                LOGGER.warn(
+                    "TPS below %d since %d seconds",
+                    Config.lowTPSThreshold, lagSec
+                );
+
+                if (Config.attemptSoftKill)
+                    performSoftKill();
+                else
+                    performHardKill();
+            }
+        }
+        else lagTicks = 0;
     }
 
-    /** Monitors an unresponsive server, then proceeds to kill it if confirmed */
-    private void onHung()
+    /** Regular check of a hanging server; kills if confirmed hung */
+    private void doHanging()
     {
-        LOGGER.trace("Handling HUNG state on watchdog");
-
-        // Recover to MONITOR state if no longer hanging
         int serverTick = SERVER.getTickCounter();
-        if (serverTick != lastServerTick)
+        if (serverTick != lastTick)
         {
-            LOGGER.debug("Server no longer hung; switching to MONITOR state");
-            state = WatchdogState.MONITOR;
+            LOGGER.debug("Server no longer hanging");
+            isHanging = false;
             return;
         }
 
         hungTicks++;
         int hangSec = hungTicks * Config.watchdogInterval;
-        LOGGER.trace("Server hanging: %d seconds", hangSec);
+        LOGGER.trace("Server hanging for %d seconds", hangSec);
 
-        if (hangSec > Config.maxTickTimeout)
+        if (hangSec >= Config.maxTickTimeout)
         {
-            LOGGER.debug("Server confirmed hung; attempting to kill");
+            LOGGER.warn("Server is hung on a tick after %d seconds", hangSec);
 
-            if (Config.attemptSoftKill) performSoftKill();
-            else                        performHardKill();
+            if (Config.attemptSoftKill)
+                performSoftKill();
+            else
+                performHardKill();
         }
-    }
-
-    private void onSlowed()
-    {
-        // TODO: implement
     }
 
     private void performSoftKill()
     {
-        LOGGER.fatal("Attempting a soft kill of the server...");
+        LOGGER.warn("Attempting a soft kill of the server...");
 
+        // Using a new thread as the shutdown watchdog, because all timer tasks appear to
+        // get canceled whilst runtime is exiting
         Thread hardKillCheck = new Thread("Shutdown watchdog")
         {
             public void run()
             {
                 try
                 {
+                    // This will not delay the soft kill; this is not a shutdown task, so
+                    // the Runtime exiting process will abort this thread
                     Thread.sleep(10000);
                     System.out.println("Hung during soft kill; trying a hard kill..");
                     performHardKill();
@@ -147,13 +143,15 @@ public class WatchdogTask extends TimerTask
 
         hardKillCheck.start();
 
-        // Use exitJava because MinecraftServer registers a shutdown hook
+        // Use exitJava because MinecraftServer registers a shutdown hook, which in turn
+        // attempts to save all worlds. This is also the preferred method of exiting the
+        // JVM within Forge, so that exits may be logged with a stack trace
         FMLCommonHandler.instance().exitJava(1, false);
     }
 
     private void performHardKill()
     {
-        LOGGER.fatal("Attempting a hard kill of the server - data may be lost!");
+        LOGGER.warn("Attempting a hard kill of the server - data may be lost!");
         FMLCommonHandler.instance().exitJava(1, true);
     }
 

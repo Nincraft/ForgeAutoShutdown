@@ -57,9 +57,6 @@ public class ForgeAutoShutdown
             ShutdownCommand.create(event);
 
         if (Config.watchdogEnabled)
-        {
-            HangCommand.create(event);
             WatchdogTask.create();
-        }
     }
 }
