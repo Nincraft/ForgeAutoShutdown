@@ -1,9 +1,8 @@
-ForgeAutoShutdown is a server-only mod that schedules a specific time of the day for the server to shut down. This allows the server to be automatically restarted daily by a shell script or Windows service. Players can also be allowed to vote in a manual shutdown, so a lagged out server would not require admin intervention.
+ForgeAutoShutdown is a server-only mod that can:
 
-# License
-The codebase is licensed under the MIT license. Therefore, you **are free** to redistribute this mod or any of its derivatives as part of a modpack. You **are free** to use this mod for commercial intents. You **are free** to use any or all of this code as part of another code base, as a derivative or as a clone. You have **zero obligation** to notify me or request permission to use this codebase in its raw or compiled forms.
-
-For the full legal code, see `LICENSE.md`.
+* Schedules a specific time of the day for the server to shut down. This allows the server to be automatically restarted daily by a shell script or Windows service.
+* Allow players to vote for a manual shutdown, so a lagged out server would not require admin intervention
+* Shutdown or kill a server that is hung (stalled) or laggy
 
 # Requirements
 
@@ -20,48 +19,16 @@ For the full legal code, see `LICENSE.md`.
 4. Open `config/ForgeAutoShutdown.cfg` and modify configuration to desired values
 5. Restart the server for changes to take effect
 
-## Example config
+# Features
 
-This example configures a server to automatically shutdown at 9:30AM (09:30) server time. Warnings will begin at 9:25AM (09:25). Voting is enabled, where two players are required to be online to start a vote. The messages are intended for servers that use ForgeAutoShutdown for automatic daily restarts.
+*Any of these features may be disabled in the config*
 
-```
-messages {
-    #  [default: Scheduled server shutdown]
-    S:Kick=Daily restart; please return in 5 minutes
-
-    #  [default: Server is shutting down in %m minute(s).]
-    S:Warn=Server will perform its daily restart in %m minute(s).
-}
-
-schedule {
-    # Hour of the shutdown process (e.g. 8 for 8 AM) [range: 0 ~ 23, default: 6]
-    I:Hour=9
-
-    # Minute of the shutdown process (e.g. 30 for half-past) [range: 0 ~ 59, default: 0]
-    I:Minute=25
-}
-
-voting {
-    # If true, players may vote to shut server down using '/shutdown' [default: true]
-    B:VoteEnabled=true
-    
-    # Max. 'No' votes to cancel a shutdown [range: 1 ~ 999, default: 1]
-    I:MaxNoVotes=1
-
-    # Min. players online required to begin a vote [range: 1 ~ 999, default: 2]
-    I:MinVoters=2
-
-    # Min. minutes after a failed vote before new one can begin [range: 0 ~ 1440, default: 15]
-    I:VoteInterval=15
-}
-```
-
-## Verification
+## Scheduled daily shutdown
 ForgeAutoShutdown will log a message at the INFO level on server startup, with a date and time of the next scheduled shutdown. For example:
 
 ```[10:50:09] [Server thread/INFO] [forgeautoshutdown]: Next automatic shutdown: 08:30:00 19-June-2015```
 
-If this message is missing, the mod has not been correctly installed. If the mod is installed on a Minecraft client, it will log an ERROR to the console and not perform any function. It will not crash or disable the client.
+If this message is missing, the mod has not been correctly installed or the schedule is disabled in config. If the mod is installed on a Minecraft client, it will log an ERROR to the console and not perform any function. It will not crash or disable the client.
 
 Scheduled shutdown will always happen within the next 24 hours after server startup. This means that if the server starts and has missed the shutdown time even by a few minutes, it will schedule for the next day.
 
@@ -73,6 +40,15 @@ If the amount of `no` votes reach a maximum threshold, the vote fails. If a vote
 
 If the vote succeeds, the server will instantly shutdown without warning. If an appropriate means of automatic restart is in place, it should be expected that the server will go up within a few minutes.
 
+## Watchdog
+
+If enabled, a watchdog thread can periodically watch the server for unresponsiveness. By default, it checks every 10 seconds:
+
+* Whether the server is hanging (or "stalling") on a tick
+* Whether the TPS stays below a certain amount for a certain length of time
+
+If either problem is detected, the watchdog will try a soft kill (or a hard kill, if configured). This makes the server try to save all its data before shutting down. If a soft kill takes longer than ten seconds, the watchdog will do a hard kill.
+
 # Building
 
 ## Requirements
@@ -80,4 +56,31 @@ If the vote succeeds, the server will instantly shutdown without warning. If an 
 * [Gradle installation with gradle binary in PATH](http://www.gradle.org/installation). Unlike the source package provided by Forge, this repository does not include a gradle wrapper or distribution.
 
 ## Usage
-Simply execute `gradle setupDevWorkspace` in the root directory of this repository. Then execute `gradle build`. If subsequent builds cause problems, do `gradle clean`.
+Simply execute `gradle setupCIWorkspace` in the root directory of this repository. Then execute `gradle build`. If subsequent builds cause problems, do `gradle clean`.
+
+# Debugging
+
+ForgeAutoShutdown makes use of `DEBUG` and `TRACE` logging levels for debugging. To enable these messages, append this line to the server's JVM arguments:
+
+> `-Dlog4j.configurationFile=log4j.xml`
+
+Then in the root directory of the server, create the file `log4j.xml` with these contents:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration monitorInterval="5">
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="[%d{HH:mm:ss} %-4level] %logger{36}: %msg%n"/>
+    </Console>
+  </Appenders>
+  <Loggers>
+    <Root level="INFO">
+      <AppenderRef ref="Console"/>
+    </Root>
+    <Logger name="ForgeAutoShutdown" level="ALL" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
+  </Loggers>
+</Configuration>
+```
