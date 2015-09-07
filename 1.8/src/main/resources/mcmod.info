@@ -1,0 +1,16 @@
+[
+{
+  "modid": "${modid}",
+  "name": "Forge Auto-Shutdown",
+  "description": "Automatically shuts down the server by schedule, or by player vote.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "https://github.com/Gamealition/ForgeAutoShutdown",
+  "updateUrl": "",
+  "authorList": ["RoyCurtis"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

@@ -1,0 +1,37 @@
+buildscript
+{
+    // Repositories and plugins used by this buildscript. For internal Gradle use only.
+    repositories
+    {
+        mavenCentral()
+        maven
+        {
+            name = "forge"
+            url  = "http://files.minecraftforge.net/maven"
+        }
+        maven
+        {
+            name = "sonatype"
+            url  = "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+    }
+
+    dependencies
+    {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+    }
+}
+
+// Applies the custom Gradle plugin Forge uses, for Forge-specific tasks
+apply plugin: 'forge'
+apply from: '../common.gradle'
+
+minecraft
+{
+    version = "1.7.10-10.13.4.1448-1.7.10"
+}
+
+jar
+{
+    classifier "1.7.10"
+}

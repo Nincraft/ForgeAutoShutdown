@@ -1,6 +1,6 @@
 [
 {
-  "modid": "ForgeAutoShutdown",
+  "modid": "${modid}",
   "name": "Forge Auto-Shutdown",
   "description": "Automatically shuts down the server by schedule, or by player vote.",
   "version": "${version}",
