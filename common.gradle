@@ -2,7 +2,7 @@
  * Common build properties for all versions of ForgeAutoShutdown
  */
 
-version = "1.0.5"
+version = "1.0.6"
 group   = "roycurtis.autoshutdown"
 
 // Specifies the output jar file's prefix

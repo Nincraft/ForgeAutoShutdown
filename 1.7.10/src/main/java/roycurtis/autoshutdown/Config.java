@@ -17,7 +17,8 @@ class Config
     static Configuration config;
 
     static boolean scheduleEnabled = true;
-    static boolean scheduleDelay   = true;
+    static boolean scheduleWarning = true;
+    static boolean scheduleDelay   = false;
     static int     scheduleHour    = 6;
     static int     scheduleMinute  = 0;
     static int     scheduleDelayBy = 5;
@@ -51,7 +52,9 @@ class Config
 
         scheduleEnabled = config.getBoolean("Enabled", SCHEDULE, scheduleEnabled,
             "If true, server will automatically shutdown at given time of day");
-        scheduleDelay   = config.getBoolean("Delay", SCHEDULE, scheduleEnabled,
+        scheduleWarning = config.getBoolean("Warnings", SCHEDULE, scheduleWarning,
+            "If true, server will give five minutes of warnings prior to shutdown");
+        scheduleDelay   = config.getBoolean("Delay", SCHEDULE, scheduleDelay,
             "If true, server will delay shutdown until server is empty");
         scheduleHour    = config.getInt("Hour", SCHEDULE, scheduleHour, 0, 23,
             "Hour of the shutdown process (e.g. 8 for 8 AM)");

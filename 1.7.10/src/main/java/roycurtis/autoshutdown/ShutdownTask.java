@@ -97,10 +97,10 @@ public class ShutdownTask extends TimerTask
             return;
         }
 
-        if (warningsLeft == 0)
-            Server.shutdown(Config.msgKick);
-        else
+        if (Config.scheduleWarning && warningsLeft > 0)
             performWarning();
+        else
+            Server.shutdown(Config.msgKick);
 
         LOGGER.debug("ShutdownTask ticked; %d warning(s) to go", warningsLeft);
     }
