@@ -17,8 +17,10 @@ class Config
     static Configuration config;
 
     static boolean scheduleEnabled = true;
+    static boolean scheduleDelay   = true;
     static int     scheduleHour    = 6;
     static int     scheduleMinute  = 0;
+    static int     scheduleDelayBy = 5;
 
     static boolean voteEnabled  = true;
     static int     voteInterval = 15;
@@ -49,10 +51,17 @@ class Config
 
         scheduleEnabled = config.getBoolean("Enabled", SCHEDULE, scheduleEnabled,
             "If true, server will automatically shutdown at given time of day");
+        scheduleDelay   = config.getBoolean("Delay", SCHEDULE, scheduleEnabled,
+            "If true, server will delay shutdown until server is empty");
         scheduleHour    = config.getInt("Hour", SCHEDULE, scheduleHour, 0, 23,
             "Hour of the shutdown process (e.g. 8 for 8 AM)");
         scheduleMinute  = config.getInt("Minute", SCHEDULE, scheduleMinute, 0, 59,
             "Minute of the shutdown process (e.g. 30 for half-past)");
+
+        scheduleDelayBy = config.getInt(
+            "DelayBy", SCHEDULE, scheduleDelayBy, 1, 1440,
+            "Minutes to delay scheduled shutdown by, if server is not empty"
+        );
 
         config.setCategoryComment(VOTING,
             "Allows players to shut down the server without admin intervention");

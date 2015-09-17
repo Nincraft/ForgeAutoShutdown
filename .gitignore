@@ -1,7 +1,5 @@
 /.nb-gradle/
 /.idea/
-/build/
-/classes/
 /eclipse/
 /javadocs/
 /output/
@@ -13,3 +11,7 @@
 *-javadoc/
 debug/
 .gradle
+1.8/build/
+1.8/classes/
+1.7.10/build/
+1.7.10/classes/

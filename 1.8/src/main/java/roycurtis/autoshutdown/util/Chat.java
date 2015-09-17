@@ -1,42 +1,23 @@
-package roycurtis.autoshutdown;
+package roycurtis.autoshutdown.util;
 
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.StatCollector;
-import org.apache.logging.log4j.Logger;
 
 /**
- * Static class for utility functions (syntactic sugar)
+ * Static utility class for chat functions (syntactic sugar)
  */
-class Util
+public class Chat
 {
-    static void performShutdown(String reason)
-    {
-        MinecraftServer SERVER = MinecraftServer.getServer();
-        Logger          LOGGER = ForgeAutoShutdown.LOGGER;
-
-        reason = Util.translate(reason);
-
-        for ( Object value : SERVER.getConfigurationManager().playerEntityList.toArray() )
-        {
-            EntityPlayerMP player = (EntityPlayerMP) value;
-            player.playerNetServerHandler.kickPlayerFromServer(reason);
-        }
-
-        LOGGER.debug("Shutdown initiated because: %s", reason);
-        SERVER.initiateShutdown();
-    }
-
     /**
      * Attempts to a translate a given string/key using the local language, and then
      * using the fallback language.
      * @param msg String or language key to translate
      * @return Translated or same string
      */
-    static String translate(String msg)
+    public static String translate(String msg)
     {
         return StatCollector.canTranslate(msg)
             ? StatCollector.translateToLocal(msg)
@@ -49,10 +30,9 @@ class Util
      * @param msg String or language key to broadcast
      * @param parts Optional objects to add to formattable message
      */
-    static void broadcast(MinecraftServer server, String msg, Object... parts)
+    public static void toAll(MinecraftServer server, String msg, Object... parts)
     {
-        server.getConfigurationManager()
-            .sendChatMsg( prepareText(msg, parts) );
+        server.getConfigurationManager().sendChatMsg( prepareText(msg, parts) );
     }
 
     /**
@@ -61,7 +41,7 @@ class Util
      * @param msg String or language key to broadcast
      * @param parts Optional objects to add to formattable message
      */
-    static void chat(ICommandSender sender, String msg, Object... parts)
+    public static void to(ICommandSender sender, String msg, Object... parts)
     {
         sender.addChatMessage( prepareText(msg, parts) );
     }

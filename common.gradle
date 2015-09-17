@@ -30,8 +30,8 @@ idea
 {
     module
     {
-        // Fixes issues with debugging in IntelliJ
-        inheritOutputDirs = true
+        outputDir     = file 'classes/production/'
+        testOutputDir = file 'classes/test/'
     }
 }
 

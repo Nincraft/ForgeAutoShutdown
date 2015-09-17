@@ -6,6 +6,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import org.apache.logging.log4j.Logger;
+import roycurtis.autoshutdown.util.Chat;
+import roycurtis.autoshutdown.util.Server;
 
 import java.time.Instant;
 import java.util.*;
@@ -72,7 +74,7 @@ public class ShutdownCommand implements ICommand
         if (players.size() < Config.minVoters)
             throw new CommandException("FAS.error.notenoughplayers", Config.minVoters);
 
-        Util.broadcast(SERVER, "FAS.msg.votebegun");
+        Chat.toAll(SERVER, "FAS.msg.votebegun");
         voting = true;
     }
 
@@ -87,10 +89,10 @@ public class ShutdownCommand implements ICommand
         Boolean vote = args[0].equalsIgnoreCase("yes");
 
         if ( votes.containsKey(name) )
-            Util.chat(sender, "FAS.msg.votecleared");
+            Chat.to(sender, "FAS.msg.votecleared");
 
         votes.put(name, vote);
-        Util.chat(sender, "FAS.msg.voterecorded");
+        Chat.to(sender, "FAS.msg.voterecorded");
         checkVotes();
     }
 
@@ -120,12 +122,12 @@ public class ShutdownCommand implements ICommand
     private void voteSuccess()
     {
         LOGGER.info("Server shutdown initiated by vote");
-        Util.performShutdown("FAS.msg.usershutdown");
+        Server.shutdown("FAS.msg.usershutdown");
     }
 
     private void voteFailure(String reason)
     {
-        Util.broadcast(SERVER, reason);
+        Chat.toAll(SERVER, reason);
         votes.clear();
 
         lastVote = new Date();

@@ -6,6 +6,8 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.Logger;
+import roycurtis.autoshutdown.util.Chat;
+import roycurtis.autoshutdown.util.Server;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -58,45 +60,73 @@ public class ShutdownTask extends TimerTask
     }
 
     boolean executeTick  = false;
-    Byte    warningsLeft = 5;
+    byte    warningsLeft = 5;
+    int     delayMinutes = 0;
 
+    /** Runs from the timer thread */
     @Override
-    /**
-     * Tick handler is registered on first timer call, so as not to have a useless
-     * handler running every tick for the server's lifetime
-     */
     public void run()
     {
-        // Safe call from timer thread; event bus collection is ConcurrentHashMap
+        /**
+         * Tick handler is registered on first timer call, so as not to have a useless
+         * handler running every tick for the server's lifetime.
+         *
+         * Safe call from timer thread; event bus collection is ConcurrentHashMap
+         */
         FMLCommonHandler.instance().bus().register(this);
+
         executeTick = true;
         LOGGER.debug("Timer called; next ShutdownTask tick will run");
     }
 
+    /** Runs from the main server thread */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onServerTick(TickEvent.ServerTickEvent event)
     {
         // Refrain from running at the end of server ticking
         if (!executeTick || event.phase == TickEvent.Phase.END)
             return;
+        else
+            executeTick = false;
+
+        // Determine if shutdown should delay because server is not empty
+        if ( Config.scheduleDelay && performDelay() )
+        {
+            LOGGER.debug("ShutdownTask ticked; %d minute(s) of delay to go", delayMinutes);
+            delayMinutes--;
+            return;
+        }
 
         if (warningsLeft == 0)
-            Util.performShutdown(Config.msgKick);
+            Server.shutdown(Config.msgKick);
         else
             performWarning();
 
-        executeTick = false;
-        LOGGER.debug("ShutdownTask ticked; %d warnings to go", warningsLeft);
+        LOGGER.debug("ShutdownTask ticked; %d warning(s) to go", warningsLeft);
     }
 
-    private ShutdownTask() { }
-
-    void performWarning()
+    private boolean performDelay()
     {
-        String warning = Config.msgWarn.replace( "%m", warningsLeft.toString() );
+        if (delayMinutes > 0)
+            return true;
 
-        Util.broadcast(SERVER, "*** " + warning);
+        if ( !Server.hasRealPlayers() )
+            return false;
+
+        warningsLeft  = 5;
+        delayMinutes += Config.scheduleDelayBy;
+        LOGGER.info("Shutdown delayed by %d minutes; server is not empty", delayMinutes);
+        return true;
+    }
+
+    private void performWarning()
+    {
+        String warning = Config.msgWarn.replace( "%m", Byte.toString(warningsLeft) );
+
+        Chat.toAll(SERVER, "*** " + warning);
         LOGGER.info(warning);
         warningsLeft--;
     }
+
+    private ShutdownTask() { }
 }
