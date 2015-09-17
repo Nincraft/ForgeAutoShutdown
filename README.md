@@ -33,10 +33,10 @@ If this message is missing, the mod has not been correctly installed or the sche
 Scheduled shutdown will always happen within the next 24 hours after server startup. This means that if the server starts and has missed the shutdown time even by a few minutes, it will schedule for the next day.
 
 ### Warnings
-By default a scheduled shutdown will give a warning to all players, each minute for five minutes, after the scheduled time. This can be disabled by setting `scheduleWarning` to `false`. This means the server will shutdown, without warning, by the scheduled time.
+By default a scheduled shutdown will give a warning to all players, each minute for five minutes, after the scheduled time. This can be disabled by setting `Warnings` to `false`. This means the server will shutdown, without warning, by the scheduled time.
 
 ### Delay
-If desired, the shutdown can be delayed by a configurable amount if players are still on the server. To enable this, set `scheduleDelay` to true and adjust `scheduleDelayBy` to the amount of minutes to delay.
+If desired, the shutdown can be delayed by a configurable amount if players are still on the server. To enable this, set `Delay` to true and adjust `DelayBy` to the amount of minutes to delay.
 
 The shutdown will be repeatedly delayed until the server is empty. When checking if the server for players, fake players (e.g. BuildCraft's quarry) are excluded. Note that shutdown warnings are ineffective with delays, and a pending shutdown will be cancelled if a player comes online during the countdown.
 
