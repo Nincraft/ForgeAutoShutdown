@@ -44,14 +44,23 @@ public class ShutdownTask extends TimerTask
 
         Timer    timer      = new Timer("ForgeAutoShutdown timer");
         Calendar shutdownAt = Calendar.getInstance();
-        shutdownAt.set(Calendar.HOUR_OF_DAY, Config.scheduleHour);
-        shutdownAt.set(Calendar.MINUTE, Config.scheduleMinute);
-        shutdownAt.set(Calendar.SECOND, 0);
 
-        // Adjust for when current time surpasses shutdown schedule
-        // (e.g. if shutdown time is 07:00 and current time is 13:21)
-        if ( shutdownAt.before( Calendar.getInstance() ) )
-            shutdownAt.add(Calendar.DAY_OF_MONTH, 1);
+        if (Config.scheduleUptime)
+        {
+            shutdownAt.add(Calendar.HOUR_OF_DAY, Config.scheduleHour);
+            shutdownAt.add(Calendar.MINUTE, Config.scheduleMinute);
+        }
+        else
+        {
+            shutdownAt.set(Calendar.HOUR_OF_DAY, Config.scheduleHour);
+            shutdownAt.set(Calendar.MINUTE, Config.scheduleMinute);
+            shutdownAt.set(Calendar.SECOND, 0);
+
+            // Adjust for when current time surpasses shutdown schedule
+            // (e.g. if shutdown time is 07:00 and current time is 13:21)
+            if ( shutdownAt.before( Calendar.getInstance() ) )
+                shutdownAt.add(Calendar.DAY_OF_MONTH, 1);
+        }
 
         Date shutdownAtDate = shutdownAt.getTime();
 
@@ -98,11 +107,12 @@ public class ShutdownTask extends TimerTask
         }
 
         if (Config.scheduleWarning && warningsLeft > 0)
+        {
             performWarning();
+            LOGGER.debug("ShutdownTask ticked; %d warning(s) to go", warningsLeft);
+        }
         else
             Server.shutdown(Config.msgKick);
-
-        LOGGER.debug("ShutdownTask ticked; %d warning(s) to go", warningsLeft);
     }
 
     private boolean performDelay()

@@ -2,30 +2,27 @@
  * Common build properties for all versions of ForgeAutoShutdown
  */
 
-version = "1.0.6"
+// Gradle project properties
+version = "1.0.7"
 group   = "roycurtis.autoshutdown"
 
 // Specifies the output jar file's prefix
 archivesBaseName = "ForgeAutoShutdown"
 
-minecraft
-{
-    runDir  = "debug"
-}
+// Specifies the working directory for ForgeGradle run configs
+minecraft.runDir  = "debug"
 
-jar
-{
-    // Sets the output directory of the mod's jar file
-    destinationDir = file '../output'
-}
+// Sets the output directory of the mod's jar file
+jar.destinationDir = file '../output'
 
+// Enforces use of Java 1.8 language level
 compileJava
 {
-    // Enforces use of Java 1.7 language level
     sourceCompatibility = "1.8"
     targetCompatibility = "1.8"
 }
 
+// Fixes issues with debugging in IntelliJ
 idea
 {
     module
@@ -33,6 +30,13 @@ idea
         outputDir     = file 'classes/production/'
         testOutputDir = file 'classes/test/'
     }
+}
+
+// Fixes issues with µ character in source files
+// From https://discuss.gradle.org/t/special-characters-in-java-string-literals-arent-interpreted-correctly/4665
+tasks.withType(JavaCompile)
+{
+    options.encoding = "UTF-8"
 }
 
 processResources

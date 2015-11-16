@@ -1,6 +1,7 @@
 package roycurtis.autoshutdown;
 
 import net.minecraftforge.common.config.Configuration;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 
@@ -19,6 +20,7 @@ class Config
     static boolean scheduleEnabled = true;
     static boolean scheduleWarning = true;
     static boolean scheduleDelay   = false;
+    static boolean scheduleUptime  = false;
     static int     scheduleHour    = 6;
     static int     scheduleMinute  = 0;
     static int     scheduleDelayBy = 5;
@@ -51,15 +53,18 @@ class Config
             "All times are 24 hour (military) format, relative to machine's local time");
 
         scheduleEnabled = config.getBoolean("Enabled", SCHEDULE, scheduleEnabled,
-            "If true, server will automatically shutdown at given time of day");
+            "If true, server will automatically shutdown");
         scheduleWarning = config.getBoolean("Warnings", SCHEDULE, scheduleWarning,
             "If true, server will give five minutes of warnings prior to shutdown");
         scheduleDelay   = config.getBoolean("Delay", SCHEDULE, scheduleDelay,
             "If true, server will delay shutdown until server is empty");
-        scheduleHour    = config.getInt("Hour", SCHEDULE, scheduleHour, 0, 23,
-            "Hour of the shutdown process (e.g. 8 for 8 AM)");
+        scheduleUptime  = config.getBoolean("Uptime", SCHEDULE, scheduleUptime,
+            "If true, server will use Hour and Minute as uptime until shutdown.\n" +
+            "If false, server will use Hour and Minute as time of day to shutdown.");
+        scheduleHour    = config.getInt("Hour", SCHEDULE, scheduleHour, 0, 720,
+            "Hour of the shutdown process (e.g. 8 for 8 AM OR 8 hours uptime)");
         scheduleMinute  = config.getInt("Minute", SCHEDULE, scheduleMinute, 0, 59,
-            "Minute of the shutdown process (e.g. 30 for half-past)");
+            "Minute of the shutdown process (e.g. 30 for half-past OR 30 mins uptime)");
 
         scheduleDelayBy = config.getInt(
             "DelayBy", SCHEDULE, scheduleDelayBy, 1, 1440,
@@ -104,7 +109,33 @@ class Config
         msgKick = config.getString("Kick", MESSAGES, msgKick,
             "Message shown to player on disconnect during shutdown");
 
+        check();
         config.save();
+    }
+
+    /**
+     * Checks the loaded configuration and makes adjustments based on other config
+     */
+    static void check()
+    {
+        final Logger LOGGER = ForgeAutoShutdown.LOGGER;
+
+        // Ensure daily shutdown hour is not set to more than 23:00
+        if (!scheduleUptime && scheduleHour >= 24)
+        {
+            LOGGER.warn("Uptime shutdown is disabled, but the shutdown hour is more " +
+                "than 23! Please fix this in the config. It will be set to 00 hours.");
+            scheduleHour = 0;
+        }
+
+        // Ensure uptime shutdown is not set to zero hours zero minutes
+        if (scheduleUptime && scheduleHour == 0 && scheduleMinute == 0)
+        {
+            LOGGER.warn("Uptime shutdown is enabled, but is set to shutdown after " +
+                "0 hours and 0 minutes of uptime! Please fix this in the config. " +
+                "It will be set to 24 hours.");
+            scheduleHour = 24;
+        }
     }
 
     static boolean isNothingEnabled()

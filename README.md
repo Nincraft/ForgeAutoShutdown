@@ -1,7 +1,7 @@
 ForgeAutoShutdown is a server-only mod that can:
 
-* Schedules a specific time of the day for the server to shut down. This allows the server to be automatically restarted daily by a shell script, Windows batch file or service.
-* Allow players to vote for a manual shutdown, so a lagged out server would not require admin intervention
+* Schedule the server to automatically shut down at a specific time of day, or after X hours and minutes of uptime. This allows the server to be automatically restarted by a shell script, Windows batch file or service.
+* Allow players to vote for a manual shutdown, so a lagged out server does not require admin intervention
 * Shutdown or kill a server that is hung (stalled) or laggy
 
 # Requirements
@@ -23,14 +23,17 @@ ForgeAutoShutdown is a server-only mod that can:
 
 *Any of these features may be disabled in the config*
 
-## Scheduled daily shutdown
+## Scheduled shutdown
 ForgeAutoShutdown will log a message at the INFO level on server startup, with a date and time of the next scheduled shutdown. For example:
 
 `[10:50:09] [Server thread/INFO] [ForgeAutoShutdown]: Next automatic shutdown: 08:30:00 19-June-2015`
 
 If this message is missing, the mod has not been correctly installed or the schedule is disabled in config. If the mod is installed on a Minecraft client, it will log an ERROR to the console and not perform any function. It will not crash or disable the client.
 
-Scheduled shutdown will always happen within the next 24 hours after server startup. This means that if the server starts and has missed the shutdown time even by a few minutes, it will schedule for the next day.
+### Mode
+By default, the shutdown will be scheduled to happen at a specific time of day. This is the time local to the server and will always happen within the next 24 hours after server startup. This means that if the server starts and has missed the shutdown time even by a few minutes, it will schedule for the next day.
+
+Alternatively, setting `Uptime` to true means the server can shutdown after a specific amount of hours or minutes instead. This can allow the server to restart multiple times a day, or after a few days, etc.
 
 ### Warnings
 By default a scheduled shutdown will give a warning to all players, each minute for five minutes, after the scheduled time. This can be disabled by setting `Warnings` to `false`. This means the server will shutdown, without warning, by the scheduled time.
@@ -39,7 +42,6 @@ By default a scheduled shutdown will give a warning to all players, each minute 
 If desired, the shutdown can be delayed by a configurable amount if players are still on the server. To enable this, set `Delay` to true and adjust `DelayBy` to the amount of minutes to delay.
 
 The shutdown will be repeatedly delayed until the server is empty. When checking if the server for players, fake players (e.g. BuildCraft's quarry) are excluded. Note that shutdown warnings are ineffective with delays, and a pending shutdown will be cancelled if a player comes online during the countdown.
-
 
 ## Voting
 

@@ -26,12 +26,8 @@ buildscript
 apply plugin: 'forge'
 apply from: '../common.gradle'
 
-minecraft
-{
-    version = "1.7.10-10.13.4.1448-1.7.10"
-}
+// Sets the Forge version to use
+minecraft.version = "1.7.10-10.13.4.1448-1.7.10"
 
-jar
-{
-    classifier "1.7.10"
-}
+// Sets the built jar's suffix
+jar.classifier "1.7.10"
