@@ -8,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 import roycurtis.autoshutdown.util.Chat;
 import roycurtis.autoshutdown.util.Server;
 
-import java.time.Instant;
 import java.util.*;
 
 /**
@@ -25,7 +24,7 @@ public class ShutdownCommand implements ICommand
 
     HashMap<String, Boolean> votes = new HashMap<>();
 
-    Date    lastVote = Date.from(Instant.EPOCH);
+    Date    lastVote = new Date(0);
     boolean voting   = false;
 
     /** Creates and registers the `/shutdown` command for use */

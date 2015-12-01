@@ -18,8 +18,8 @@ jar.destinationDir = file '../output'
 // Enforces use of Java 1.8 language level
 compileJava
 {
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
+    sourceCompatibility = "1.7"
+    targetCompatibility = "1.7"
 }
 
 // Fixes issues with debugging in IntelliJ
