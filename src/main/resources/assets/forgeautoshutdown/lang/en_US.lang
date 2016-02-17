@@ -1,0 +1,14 @@
+FAS.msg.usershutdown=Server shutting down by user vote
+FAS.msg.voterecorded=*** Your vote has been recorded
+FAS.msg.votecleared=*** Your previous vote has been cleared
+FAS.msg.votebegun=*** A vote has begun to shutdown the server; please do '/shutdown yes' or '/shutdown no' to cast your vote
+
+FAS.fail.notenoughplayers=*** Vote to shutdown the server failed; not enough players online
+FAS.fail.maxnovotes=*** Vote to shutdown the server failed; too many 'no' votes
+
+FAS.error.toosoon=*** It is too soon since the last vote to initiate another one. Try again in %d seconds.
+FAS.error.notenoughplayers=*** Need at least %d players online to initiate a vote
+FAS.error.novoteinprogress=*** No vote is in progress; try '/shutdown'
+FAS.error.voteinprogress=*** Vote in progress; try '/shutdown yes' or '/shutdown no'
+FAS.error.votebadsyntax=*** Incorrect syntax; try '/shutdown yes' or '/shutdown no'
+FAS.error.playersonly=*** Only players may use this command; try '/stop' instead

@@ -15,3 +15,8 @@ debug/
 1.8/classes/
 1.7.10/build/
 1.7.10/classes/
+run/
+build/
+bin/
+*.launch
+.settings/
