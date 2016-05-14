@@ -2,27 +2,13 @@ package roycurtis.autoshutdown.util;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.StatCollector;
+import net.minecraft.util.text.TextComponentString;
 
 /**
  * Static utility class for chat functions (syntactic sugar)
  */
 public class Chat
 {
-    /**
-     * Attempts to a translate a given string/key using the local language, and then
-     * using the fallback language.
-     * @param msg String or language key to translate
-     * @return Translated or same string
-     */
-    public static String translate(String msg)
-    {
-        return StatCollector.canTranslate(msg)
-            ? StatCollector.translateToLocal(msg)
-            : StatCollector.translateToFallback(msg);
-    }
 
     /**
      * Broadcasts an auto. translated, formatted encapsulated message to all players
@@ -30,9 +16,9 @@ public class Chat
      * @param msg String or language key to broadcast
      * @param parts Optional objects to add to formattable message
      */
-    public static void toAll(MinecraftServer server, String msg, Object... parts)
+    public static void toAll(MinecraftServer server, TextComponentString msg)
     {
-        server.getConfigurationManager().sendChatMsg( prepareText(msg, parts) );
+        server.addChatMessage( msg );
     }
 
     /**
@@ -41,16 +27,9 @@ public class Chat
      * @param msg String or language key to broadcast
      * @param parts Optional objects to add to formattable message
      */
-    public static void to(ICommandSender sender, String msg, Object... parts)
+    public static void to(ICommandSender sender, TextComponentString msg)
     {
-        sender.addChatMessage( prepareText(msg, parts) );
+        sender.addChatMessage( msg );
     }
 
-    private static IChatComponent prepareText(String msg, Object... parts)
-    {
-        String translated = translate(msg);
-        String formatted  = String.format(translated, parts);
-
-        return new ChatComponentText(formatted);
-    }
 }

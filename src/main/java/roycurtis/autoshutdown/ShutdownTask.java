@@ -1,20 +1,23 @@
 package roycurtis.autoshutdown;
 
-import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import org.apache.logging.log4j.Logger;
-import roycurtis.autoshutdown.util.Chat;
-import roycurtis.autoshutdown.util.Server;
-
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import org.apache.logging.log4j.Logger;
+
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import roycurtis.autoshutdown.util.Chat;
+import roycurtis.autoshutdown.util.Server;
 
 /**
  * Singleton that acts as a timer task and an event handler for daily shutdown.
@@ -39,7 +42,7 @@ public class ShutdownTask extends TimerTask
             throw new RuntimeException("ShutdownTask can only be created once");
 
         INSTANCE = new ShutdownTask();
-        SERVER   = MinecraftServer.getServer();
+        SERVER   = DimensionManager.getWorld(0).getMinecraftServer();
         LOGGER   = ForgeAutoShutdown.LOGGER;
 
         Timer    timer      = new Timer("ForgeAutoShutdown timer");
@@ -133,7 +136,7 @@ public class ShutdownTask extends TimerTask
     {
         String warning = Config.msgWarn.replace( "%m", Byte.toString(warningsLeft) );
 
-        Chat.toAll(SERVER, "*** " + warning);
+        Chat.toAll(SERVER, new TextComponentString("*** " + warning));
         LOGGER.info(warning);
         warningsLeft--;
     }

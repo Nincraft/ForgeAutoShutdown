@@ -25,11 +25,6 @@ class Config
     static int     scheduleMinute  = 0;
     static int     scheduleDelayBy = 5;
 
-    static boolean voteEnabled  = true;
-    static int     voteInterval = 15;
-    static int     minVoters    = 2;
-    static int     maxNoVotes   = 1;
-
     static boolean watchdogEnabled  = false;
     static boolean attemptSoftKill  = true;
     static int     watchdogInterval = 10;
@@ -70,18 +65,6 @@ class Config
             "DelayBy", SCHEDULE, scheduleDelayBy, 1, 1440,
             "Minutes to delay scheduled shutdown by, if server is not empty"
         );
-
-        config.setCategoryComment(VOTING,
-            "Allows players to shut down the server without admin intervention");
-
-        voteEnabled  = config.getBoolean("VoteEnabled", VOTING, voteEnabled,
-            "If true, players may vote to shut server down using '/shutdown'");
-        voteInterval = config.getInt("VoteInterval", VOTING, voteInterval, 0, 1440,
-            "Min. minutes after a failed vote before new one can begin");
-        minVoters    = config.getInt("MinVoters", VOTING, minVoters, 1, 999,
-            "Min. players online required to begin a vote");
-        maxNoVotes   = config.getInt("MaxNoVotes", VOTING, maxNoVotes, 1, 999,
-            "Max. 'No' votes to cancel a shutdown");
 
         config.setCategoryComment(WATCHDOG,
             "Monitors the server and tries to kill it if unresponsive. " +
@@ -140,7 +123,7 @@ class Config
 
     static boolean isNothingEnabled()
     {
-        return !scheduleEnabled && !voteEnabled && !watchdogEnabled;
+        return !scheduleEnabled && !watchdogEnabled;
     }
 
     private Config() { }

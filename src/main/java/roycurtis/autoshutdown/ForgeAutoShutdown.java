@@ -51,11 +51,5 @@ public class ForgeAutoShutdown
 
         if (Config.scheduleEnabled)
             ShutdownTask.create();
-
-        if (Config.voteEnabled)
-            ShutdownCommand.create(event);
-
-        if (Config.watchdogEnabled)
-            WatchdogTask.create();
     }
 }
