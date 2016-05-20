@@ -25,7 +25,7 @@ public class Server
         for ( Object value : SERVER.getPlayerList().getPlayerList() )
         {
             EntityPlayerMP player = (EntityPlayerMP) value;
-            player.playerNetServerHandler.kickPlayerFromServer(reason);
+            player.connection.kickPlayerFromServer(reason);
         }
 
         LOGGER.debug("Shutdown initiated because: %s", reason);
