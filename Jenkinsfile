@@ -3,7 +3,7 @@ node {
    stage 'Checkout'
 
    // Get some code from a GitHub repository
-   git branch: env.BRANCH_NAME, url: 'https://github.com/Nincraft/ForgeAutoShutdown.git'
+   git url: 'https://github.com/Nincraft/ForgeAutoShutdown.git'
 
    stage 'Build'
    // Run the gradle build
